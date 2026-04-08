@@ -1,0 +1,41 @@
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node (Expo / React Native)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.iml
+
+# iOS
+**/Pods/
+*.xcuserstate
+DerivedData/
+
+# Android
+*.apk
+*.aab
+local.properties
+.gradle/
+**/captures/
+
+# Reference / cloned web app (optional local clone)
+reference-web-app/
