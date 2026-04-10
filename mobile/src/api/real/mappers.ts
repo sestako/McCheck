@@ -1,0 +1,53 @@
+import type { Activity, ActivityOwner, AttendeeRow } from '../types';
+
+/** Maps a single activity JSON object (camelCase or snake_case) to `Activity`. */
+export function mapActivity(raw: unknown): Activity {
+  const o = raw as Record<string, unknown>;
+  const ownerRaw = o.owner as Record<string, unknown> | undefined;
+  const owner: ActivityOwner = {
+    id: Number(ownerRaw?.id ?? o.owner_id ?? 0),
+    displayName: pickDisplayName(ownerRaw) ?? 'Organizer',
+  };
+  return {
+    id: Number(o.id),
+    uuid: String(o.uuid ?? ''),
+    state: String(o.state ?? ''),
+    name: String(o.name ?? ''),
+    teaser: o.teaser != null ? String(o.teaser) : null,
+    capacity: o.capacity != null ? Number(o.capacity) : null,
+    start: String(o.start ?? ''),
+    end: String(o.end ?? ''),
+    registrationsCount: Number(o.registrationsCount ?? o.registrations_count ?? 0),
+    attendingGuestsCount: Number(o.attendingGuestsCount ?? o.attending_guests_count ?? 0),
+    owner,
+  };
+}
+
+export function mapAttendee(raw: unknown): AttendeeRow {
+  const o = raw as Record<string, unknown>;
+  const u = (o.user ?? o) as Record<string, unknown>;
+  return {
+    user: {
+      id: Number(u.id ?? 0),
+      displayName: pickDisplayName(u) ?? 'Guest',
+    },
+    isBlocked: Boolean(o.isBlocked ?? o.is_blocked),
+  };
+}
+
+export function pickDisplayName(u: Record<string, unknown> | undefined): string | null {
+  if (!u) return null;
+  const pub =
+    u.publicName ??
+    u.public_name ??
+    u.displayName ??
+    u.display_name ??
+    u.name;
+  if (typeof pub === 'string' && pub.trim()) return pub;
+  const first = u.firstname ?? u.first_name;
+  const last = u.lastname ?? u.last_name;
+  if (typeof first === 'string' || typeof last === 'string') {
+    return [first, last].filter(Boolean).join(' ').trim() || null;
+  }
+  return null;
+}

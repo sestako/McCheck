@@ -1,0 +1,129 @@
+import type { Activity, AttendeeRow } from '../types';
+
+const owner = { id: 1, displayName: 'Alex Organizer' };
+
+/**
+ * Baseline mock activities: one upcoming, one ongoing, one past (filtered out by isActiveEvent).
+ * Used for normal mock mode.
+ */
+export const mockActivitiesCore: Activity[] = [
+  {
+    id: 101,
+    uuid: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee101',
+    state: 'PUBLIC',
+    name: 'Spring 5K — Packet pickup',
+    teaser: 'Evening pickup at the community center.',
+    capacity: 200,
+    start: new Date(Date.now() + 86400000 * 2).toISOString(),
+    end: new Date(Date.now() + 86400000 * 2 + 7200000).toISOString(),
+    registrationsCount: 142,
+    attendingGuestsCount: 8,
+    owner,
+  },
+  {
+    id: 102,
+    uuid: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee102',
+    state: 'PUBLIC',
+    name: 'Workshop: Door check-in',
+    teaser: 'Hands-on entrance flow.',
+    capacity: 50,
+    start: new Date(Date.now() - 3600000).toISOString(),
+    end: new Date(Date.now() + 3600000 * 3).toISOString(),
+    registrationsCount: 44,
+    attendingGuestsCount: 2,
+    owner,
+  },
+  {
+    id: 103,
+    uuid: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee103',
+    state: 'PAST',
+    name: 'Old event (past)',
+    teaser: null,
+    capacity: 100,
+    start: new Date(Date.now() - 86400000 * 10).toISOString(),
+    end: new Date(Date.now() - 86400000 * 9).toISOString(),
+    registrationsCount: 80,
+    attendingGuestsCount: 0,
+    owner,
+  },
+];
+
+/**
+ * Extra activities for `EXPO_PUBLIC_MOCK_SCENARIO=edge_layout` — long titles, odd offsets, empty guests, volume.
+ */
+export const mockActivitiesEdge: Activity[] = [
+  {
+    id: 104,
+    uuid: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee104',
+    state: 'PUBLIC',
+    name: `${'Very long event title — '.repeat(8)}stress test for list and detail wrapping`,
+    teaser: 'Edge case: title length.',
+    capacity: 500,
+    start: '2026-07-15T10:00:00+14:00',
+    end: '2026-07-15T22:00:00+14:00',
+    registrationsCount: 3,
+    attendingGuestsCount: 1,
+    owner,
+  },
+  {
+    id: 105,
+    uuid: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee105',
+    state: 'PUBLIC',
+    name: 'No registrants yet (edge)',
+    teaser: null,
+    capacity: 40,
+    start: new Date(Date.now() + 86400000).toISOString(),
+    end: new Date(Date.now() + 86400000 * 2).toISOString(),
+    registrationsCount: 0,
+    attendingGuestsCount: 0,
+    owner,
+  },
+  {
+    id: 106,
+    uuid: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee106',
+    state: 'PUBLIC',
+    name: 'High-volume guest list (edge)',
+    teaser: 'Pagination stress.',
+    capacity: 1000,
+    start: new Date(Date.now() - 1800000).toISOString(),
+    end: new Date(Date.now() + 7200000).toISOString(),
+    registrationsCount: 250,
+    attendingGuestsCount: 60,
+    owner,
+  },
+];
+
+/** @deprecated Use mockActivitiesCore; kept as core-only for older references. */
+export const mockActivities = mockActivitiesCore;
+
+function namesForActivity(activityId: number): string[] {
+  if (activityId === 105) return [];
+  if (activityId === 106) {
+    return Array.from({ length: 60 }, (_, i) => `Registrant ${String(i + 1).padStart(3, '0')}`);
+  }
+  if (activityId === 101 || activityId === 104) {
+    return ['Jordan Lee', 'Sam Rivera', 'Taylor Chen', 'Riley Morgan', 'Casey Brooks'];
+  }
+  return ['Morgan Blake', 'Jamie Fox'];
+}
+
+export function mockAttendeesPage(
+  activityId: number,
+  page: number,
+  search: string | null
+): { items: AttendeeRow[]; hasMore: boolean } {
+  const perPage = 8;
+  let names = namesForActivity(activityId);
+  if (search?.trim()) {
+    const q = search.trim().toLowerCase();
+    names = names.filter((n) => n.toLowerCase().includes(q));
+  }
+  const start = (page - 1) * perPage;
+  const slice = names.slice(start, start + perPage);
+  const items: AttendeeRow[] = slice.map((displayName, i) => ({
+    user: { id: 10000 + start + i, displayName },
+    isBlocked: false,
+  }));
+  const hasMore = start + perPage < names.length;
+  return { items, hasMore };
+}
