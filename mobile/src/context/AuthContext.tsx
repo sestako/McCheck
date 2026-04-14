@@ -7,6 +7,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 import { createActivitiesApi } from '../api/createActivitiesApi';
 import { ApiError } from '../api/types';
 import type { ActivitiesApi } from '../api/types';
@@ -90,7 +91,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await fetch(`${API_BASE_URL}${AUTH_LOGIN_PATH}`, {
       method: 'POST',
       headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: normalizedEmail, password }),
+      body: JSON.stringify({
+        email: normalizedEmail,
+        password,
+        deviceName: `McCheck-${Platform.OS}-${String(Platform.Version)}`,
+      }),
     });
     const body = await parseJson(res);
     if (!res.ok) {
@@ -132,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!USE_MOCK_API && token) {
       try {
         await fetch(`${API_BASE_URL}${AUTH_LOGOUT_PATH}`, {
-          method: 'POST',
+          method: 'DELETE',
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${token}`,

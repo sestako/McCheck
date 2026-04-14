@@ -1,0 +1,843 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "MoveConcept REST API",
+        "termsOfService": "https://moveconcept.cz/legal/terms-of-use",
+        "contact": {
+            "name": "Marek Mikula",
+            "url": "https://github.com/marek-mikula",
+            "email": "marek.mikula01@gmail.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://moveconcept.cz/api",
+            "description": "Production server"
+        }
+    ],
+    "paths": {
+        "/activities/{activity}/registrations": {
+            "get": {
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "List Registrations",
+                "description": "Lists all registrations for a given activity.",
+                "operationId": "27e0c747a05d7aa73e7fdbb73687d6f9",
+                "parameters": [
+                    {
+                        "name": "activity",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "$ref": "#/components/parameters/PageParameter"
+                    },
+                    {
+                        "$ref": "#/components/parameters/PerPageParameter"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of registrations.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "SUCCESS"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "registrations": {
+                                                    "properties": {
+                                                        "data": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/components/schemas/ActivityRegistrationResource"
+                                                            }
+                                                        },
+                                                        "meta": {
+                                                            "$ref": "#/components/schemas/PaginationMeta"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "UNAUTHENTICATED"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "UNAUTHORIZED"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "description": "Creates token for user based on given credentials.",
+                "operationId": "549b3b7585a3bbf2a9cea6d46d145fac",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/LoginRequest"
+                },
+                "responses": {
+                    "200": {
+                        "description": "Created token with user model.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "SUCCESS"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "1|abc123..."
+                                                },
+                                                "user": {
+                                                    "$ref": "#/components/schemas/MeResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "INVALID_CREDENTIALS"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid content.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "INVALID_CONTENT"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "errors": {
+                                                    "description": "Map of fields and their validation errors.",
+                                                    "type": "object",
+                                                    "example": {
+                                                        "email": [
+                                                            "Email must be a valid email address."
+                                                        ],
+                                                        "password": [
+                                                            "Password must be a valid password."
+                                                        ]
+                                                    },
+                                                    "additionalProperties": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "delete": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout",
+                "description": "Destroys current user's token",
+                "operationId": "621e0196dcdb26b7bd3bf475b66a8369",
+                "responses": {
+                    "200": {
+                        "description": "User logged out successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "SUCCESS"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "UNAUTHENTICATED"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Me",
+                "description": "Gets info about currently logged in user.",
+                "operationId": "3f60056c38016ff4b89228ab66dd2ae9",
+                "responses": {
+                    "200": {
+                        "description": "User data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "SUCCESS"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "$ref": "#/components/schemas/MeResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "UNAUTHENTICATED"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/users/me/activities": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "My activities",
+                "description": "Lists currently logged in user's activities.",
+                "operationId": "4899471515139914da2e5571ce014aac",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/ListMyActivitiesFilter"
+                    },
+                    {
+                        "$ref": "#/components/parameters/PageParameter"
+                    },
+                    {
+                        "$ref": "#/components/parameters/PerPageParameter"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of activities.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "SUCCESS"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "activities": {
+                                                    "properties": {
+                                                        "data": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/components/schemas/MyActivityResource"
+                                                            }
+                                                        },
+                                                        "meta": {
+                                                            "$ref": "#/components/schemas/PaginationMeta"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string",
+                                            "example": "UNAUTHENTICATED"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ActivityRegistrationResource": {
+                "oneOf": [
+                    {
+                        "title": "Guest",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "format": "uuid",
+                                "example": "550e8400-e29b-41d4-a716-446655440000"
+                            },
+                            "isGuest": {
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "guest": {
+                                "$ref": "#/components/schemas/GuestResource"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    {
+                        "title": "Registered User",
+                        "properties": {
+                            "uuid": {
+                                "type": "string",
+                                "format": "uuid",
+                                "example": "550e8400-e29b-41d4-a716-446655440000"
+                            },
+                            "isGuest": {
+                                "type": "boolean",
+                                "example": false
+                            },
+                            "user": {
+                                "$ref": "#/components/schemas/UserResource"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "MyActivityResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "state": {
+                        "type": "string",
+                        "example": "public",
+                        "enum": [
+                            "draft",
+                            "public",
+                            "canceled",
+                            "past"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Morning Run"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "morning-run"
+                    },
+                    "teaser": {
+                        "type": "string",
+                        "example": "Join us for a morning run!"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "running",
+                        "enum": [
+                            "athletics",
+                            "running",
+                            "combatSports",
+                            "cycling",
+                            "fitnessConditioning",
+                            "golf",
+                            "hikingTrekking",
+                            "yoga",
+                            "climbing",
+                            "meditationMindfulness",
+                            "nordicWalking",
+                            "swimmingWaterSports",
+                            "racketSports",
+                            "danceMovement",
+                            "teamSports",
+                            "wellnessBalance",
+                            "winterSports",
+                            "hardening"
+                        ]
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "A fun morning run in the park.",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Wenceslas Square, Prague"
+                    },
+                    "lat": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 50.0755
+                    },
+                    "lon": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 14.4378
+                    },
+                    "isSpecial": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "capacity": {
+                        "type": "integer",
+                        "example": 20,
+                        "nullable": true
+                    },
+                    "start": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-06-01T08:00:00+00:00"
+                    },
+                    "end": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-06-01T10:00:00+00:00"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00+00:00"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00+00:00"
+                    }
+                },
+                "type": "object"
+            },
+            "MeResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "firstname": {
+                        "type": "string",
+                        "example": "John",
+                        "nullable": true
+                    },
+                    "lastname": {
+                        "type": "string",
+                        "example": "Doe",
+                        "nullable": true
+                    },
+                    "fullName": {
+                        "type": "string",
+                        "example": "John Doe",
+                        "nullable": true
+                    },
+                    "username": {
+                        "type": "string",
+                        "example": "johndoe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "bio": {
+                        "type": "string",
+                        "example": "Cyclist from Prague",
+                        "nullable": true
+                    },
+                    "instagram": {
+                        "type": "string",
+                        "example": "@johndoe",
+                        "nullable": true
+                    },
+                    "facebook": {
+                        "type": "string",
+                        "example": "https://facebook.com/johndoe",
+                        "nullable": true
+                    },
+                    "strava": {
+                        "type": "string",
+                        "example": "https://strava.com/athletes/johndoe",
+                        "nullable": true
+                    },
+                    "web": {
+                        "type": "string",
+                        "example": "https://johndoe.com",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+420123456789",
+                        "nullable": true
+                    },
+                    "profilePhotoUrl": {
+                        "type": "string",
+                        "example": "https://example.com/photo.jpg"
+                    },
+                    "shareName": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "shareEmail": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "sharePhone": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "hasGoogleAuth": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00+00:00"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00+00:00"
+                    }
+                },
+                "type": "object"
+            },
+            "PaginationMeta": {
+                "properties": {
+                    "currentPage": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "from": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "lastPage": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "perPage": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "to": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 50
+                    }
+                },
+                "type": "object"
+            },
+            "GuestResource": {
+                "properties": {
+                    "firstname": {
+                        "type": "string",
+                        "example": "John"
+                    },
+                    "lastname": {
+                        "type": "string",
+                        "example": "Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+420123456789",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UserResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "firstname": {
+                        "type": "string",
+                        "example": "John",
+                        "nullable": true
+                    },
+                    "lastname": {
+                        "type": "string",
+                        "example": "Doe",
+                        "nullable": true
+                    },
+                    "fullName": {
+                        "type": "string",
+                        "example": "John Doe",
+                        "nullable": true
+                    },
+                    "username": {
+                        "type": "string",
+                        "example": "johndoe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com",
+                        "nullable": true
+                    },
+                    "bio": {
+                        "type": "string",
+                        "example": "Cyclist from Prague",
+                        "nullable": true
+                    },
+                    "instagram": {
+                        "type": "string",
+                        "example": "@johndoe",
+                        "nullable": true
+                    },
+                    "facebook": {
+                        "type": "string",
+                        "example": "https://facebook.com/johndoe",
+                        "nullable": true
+                    },
+                    "strava": {
+                        "type": "string",
+                        "example": "https://strava.com/athletes/johndoe",
+                        "nullable": true
+                    },
+                    "web": {
+                        "type": "string",
+                        "example": "https://johndoe.com",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+420123456789",
+                        "nullable": true
+                    },
+                    "profilePhotoUrl": {
+                        "type": "string",
+                        "example": "https://example.com/photo.jpg"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00+00:00"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00+00:00"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "parameters": {
+            "PageParameter": {
+                "name": "page",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 1
+                }
+            },
+            "PerPageParameter": {
+                "name": "perPage",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 10
+                }
+            },
+            "ListMyActivitiesFilter": {
+                "name": "filter",
+                "in": "query",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                        "draft",
+                        "upcoming",
+                        "ongoing"
+                    ]
+                }
+            }
+        },
+        "requestBodies": {
+            "LoginRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "email",
+                                "password",
+                                "deviceName"
+                            ],
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "john@example.com"
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "format": "password",
+                                    "example": "secret"
+                                },
+                                "deviceName": {
+                                    "type": "string",
+                                    "example": "iPhone 15"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Activity",
+            "description": "Activity"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "User",
+            "description": "User"
+        }
+    ]
+}

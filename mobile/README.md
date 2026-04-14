@@ -49,6 +49,27 @@ npx eas-cli@latest init
 
 Or install the CLI globally: `npm install -g eas-cli`, then `eas init`.
 
+### TestFlight (iOS production)
+
+1. **Build** (store distribution, auto-increments iOS build number):
+
+   ```bash
+   cd mobile
+   npx eas-cli@latest build --platform ios --profile production
+   ```
+
+2. **Submit** the finished build to App Store Connect / TestFlight (interactive — picks the app and credentials):
+
+   ```bash
+   npx eas-cli@latest submit --platform ios --profile production --id <EAS_BUILD_ID>
+   ```
+
+   Example: after a build completes, copy the build ID from the Expo dashboard URL (`.../builds/<id>`).
+
+3. **Non-interactive / CI:** `eas.json` → `submit.production.ios.ascAppId` is set for this app. To change apps, update it (Apple ID is under App Store Connect → *App Information* → **Apple ID**). See [Configure EAS Submit](https://docs.expo.dev/submit/eas-json/).
+
+4. **EAS environment variables:** the `preview` and `production` profiles in `eas.json` embed staging `EXPO_PUBLIC_*` values; you can override via the Expo dashboard **Environment variables** (account- or project-wide) if needed.
+
 ## Phase A (pre-backend)
 
 See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API** for daily dev, manual QA script, and release hygiene notes.
@@ -56,7 +77,7 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 ## Configuration
 
 - Copy `.env.example` to `.env` (or prefer `.env.local`) and set `EXPO_PUBLIC_API_BASE_URL` when using the real API.
-- Set `EXPO_PUBLIC_USE_MOCK_API=false` to switch off mocks (requires working auth + `/api/activities/mine` + token login).
+- Set `EXPO_PUBLIC_USE_MOCK_API=false` to switch off mocks (requires working auth + `/api/auth/users/me/activities` + token login).
 - If your backend auth routes differ, set:
   - `EXPO_PUBLIC_AUTH_LOGIN_PATH`
   - `EXPO_PUBLIC_AUTH_ME_PATH`

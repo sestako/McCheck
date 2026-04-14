@@ -20,9 +20,9 @@
 | Area | Mobile / UI | Backend today |
 |------|-------------|----------------|
 | **Visual design** (Forest Minimalist / tokens) | Fully implementable in the client | Not required |
-| **Auth** | Login UI + token storage | Web session login exists; **dedicated mobile/token login API not verified** in API routes |
-| **Event discovery / “my events”** | Lists, navigation | **Partial:** activity detail + search; **account “my activities” is largely web**, not mirrored in `endpoints.ts` |
-| **Guest list** | List + search UI | **Partial:** `GET /api/activities/{id}/attendees` returns **user + `isBlocked` only**—no ticket id, no check-in |
+| **Auth** | Login UI + token storage | **Available in OpenAPI:** `POST /api/auth/login`, `GET /api/auth/me`, `DELETE /api/auth/logout` (staging parity validation in progress) |
+| **Event discovery / “my events”** | Lists, navigation | **Available in OpenAPI:** `GET /api/auth/users/me/activities` (owner-scoped list) |
+| **Guest list** | List + search UI | **Available in OpenAPI:** `GET /api/activities/{activity}/registrations` (guest/user polymorphic rows; check-in still out of scope) |
 | **Scanner / check-in** | Camera + UX | **Missing:** no validate/mark-checked-in API; **no check-in fields** on `activity_registrations` |
 | **History / audit** | Timeline UI | **Missing** |
 | **Co-workers (Wix-style)** | Invite / scanner-only flows in UI | **Missing:** no **email invite → scoped scanner session** without a MoveConcept user account |
@@ -57,7 +57,7 @@ After duplicate cleanup, treat these as the **UX targets** (names from Stitch MC
 
 - `GET /api/activities/map` — map data
 - `GET /api/activities/{id}` — activity detail (`ActivityResource`: id, uuid, state, name, dates, capacity, registration/guest counts, owner, …)
-- `GET /api/activities/{id}/attendees?page=&search=` — paginated attendees (`user`, `isBlocked`)
+- `GET /api/activities/{activity}/registrations?page=&perPage=` — paginated registrations (guest/user polymorphic rows)
 - Share: `GET /api/activities/{id}/share/card`
 
 **Search:**
@@ -71,8 +71,8 @@ After duplicate cleanup, treat these as the **UX targets** (names from Stitch MC
 
 **Auth pattern:**
 
-- Many routes: `auth:sanctum`
-- Login in **`Auth` web routes** (session), not a dedicated `api` login file in the quick scan
+- OpenAPI documents mobile token auth endpoints under `/api/auth/*`.
+- Protected routes use auth middleware (`auth:sanctum` in web/backend implementation).
 
 **Domain model note:**
 
@@ -80,7 +80,7 @@ After duplicate cleanup, treat these as the **UX targets** (names from Stitch MC
 
 **Authorization note (important for McCheck):**
 
-- `ActivityAttendeesRequest` uses **`ActivityPolicy::show`**, not “owner only”—for **public** activities, anyone who can **view** the activity may access attendee listing (subject to block rules). A **staff-only** app usually needs **stricter** policies.
+- Registrations access should be validated as **owner-only** for organizer/staff workflows; if current policy is broader than intended, tighten before production rollout.
 
 ---
 
@@ -110,10 +110,10 @@ After duplicate cleanup, treat these as the **UX targets** (names from Stitch MC
 
 | # | Stitch screen | Client can build (UI + navigation) | Data / API today | Backend / schema needed |
 |---|----------------|-------------------------------------|------------------|-------------------------|
-| 1 | **Login** | Yes | Sanctum-protected APIs exist; **mobile token issuance** unclear | **POST /api/login** (or Sanctum cookie + CSRF strategy), refresh/revoke, password reset flow for mobile if required |
+| 1 | **Login** | Yes | OpenAPI includes mobile token login/logout/me endpoints | Integrate contract details (`deviceName`, error codes, token parsing) and verify staging parity |
 | 2 | **Event Hub** | Yes | Partial: search + maybe compositing multiple calls | **“Hosted by me”** list API (upcoming/past) with filters; **owner-only** enforcement |
 | 3 | **Upcoming Events** | Yes | Same as hub + `activity` detail | Same; **only owner’s** events |
-| 4 | **Guest List** | Yes | `attendees` + search + pagination | Expose **registration `uuid`**, **guest vs user**, **check-in status**; policy: **owner OR scanner session for this `activity_id`** |
+| 4 | **Guest List** | Yes | `registrations` + pagination (`page`, `perPage`) | Add/confirm search support and policy: **owner OR scanner session for this `activity_id`** |
 | 5 | **Scanner success** | Yes (animation, copy) | **None** for “valid ticket” | **Resolve code → registration**; idempotent **check-in**; allowed for **owner OR scanner session** |
 | 6 | **Scanner failure** | Yes | **None** | Same resolver; explicit error codes (unknown, already checked in, wrong event, cancelled) |
 | 7 | **Activity history** | Yes | **None** | **Check-in audit**; attribute rows to **user_id** (organizer) or **invite/session** (co-worker) |
@@ -129,9 +129,9 @@ After duplicate cleanup, treat these as the **UX targets** (names from Stitch MC
 **Phase A — Client-only / thin API**
 
 - App shell, theme (Stitch tokens), navigation placeholders
-- Login wired to **real** auth once contract is fixed
+- Login wired to **real** auth contract and staging parity-checked
 - **Activity detail** from `GET /api/activities/{id}`
-- **Guest list** read-only from current attendees API (knowing limitations)
+- **Guest list** read-only from current registrations API (knowing limitations)
 
 **Phase B — Backend MVP for check-in**
 
@@ -170,7 +170,7 @@ Use this as a living checklist (copy into Issues/Projects as needed).
 
 ### 6.3 Events list (“Event hub” / “Upcoming”)
 
-- [ ] API: **list my activities** where **owner = current user** (upcoming/past)
+- [ ] API: **list my activities** where **owner = current user** (upcoming/past) via `/api/auth/users/me/activities`
 - [ ] Pagination, filters (state, date range)
 - [ ] Co-worker flow: **skip** global hub or show **single event** from invite scope only
 
@@ -245,3 +245,5 @@ Use this as a living checklist (copy into Issues/Projects as needed).
 | 1.0 | 2026-04-08 | Initial mapping from MoveConcept codebase review + Stitch MCP summary |
 | 1.1 | 2026-04-08 | Co-workers: Wix-style email invite, no web account; §3.1, summary, phases, checklist, open questions |
 | 1.2 | 2026-04-09 | Added build status after mobile UI implementation and QA validation |
+| 1.3 | 2026-04-14 | Refreshed API status/endpoint references to current OpenAPI contract (`/api/auth/*`, `/api/auth/users/me/activities`, registrations) |
+| 1.4 | 2026-04-14 | Removed stale web-login/attendees assumptions; clarified staging parity and registrations wording |

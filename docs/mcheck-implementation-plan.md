@@ -22,9 +22,9 @@
 
 **Still pending (backend-dependent):**
 
-- Mobile-ready auth contract (email works against real API when configured; **Google** is mock-only until OAuth is wired — live `signInWithGoogle` throws)
-- Owner-scoped **my activities** endpoint (upcoming/ongoing)
-- Hardened attendees authorization for owner-only in production
+- Staging parity validation for auth contract (email + `deviceName`; **Google** is mock-only until OAuth is wired — live `signInWithGoogle` throws)
+- Production authorization hardening for organizer-only access to registrations data
+- Optional V1 quality-of-life additions from handoff doc (`search` on registrations, list counters)
 
 ## V1 — organizer app at the door (read-focused)
 
@@ -41,7 +41,7 @@
 | **Auth** | Email + Google → **same `users` as web**; store session/token securely on device; logout. |
 | **My events** | List **activities I own** that are **upcoming / ongoing** (exact filter = product + API contract). |
 | **Event detail** | Screen from `GET /api/activities/{id}` (or fields from list if the list endpoint is enriched). |
-| **Guest list** | Paginated list + search, wired to attendees API **after** backend restricts access to **owner** (see prerequisites). |
+| **Guest list** | Paginated list + search, wired to registrations API **after** backend restricts access to **owner** (see prerequisites). |
 | **Profile** | Read-only self profile + logout (minimal). |
 | **Design** | Stitch as reference; implement natively (Forest Minimalist / tokens in `mcheck-design-vs-backend.md`). |
 
@@ -49,7 +49,7 @@
 
 - **New:** `GET` (or equivalent) **`activities I own`** with filters for **upcoming + ongoing**, pagination, fields needed for list rows.
 - **Auth for mobile:** Token (or agreed) flow for **email**; **Google** OAuth → same user as web; document request/response/errors.
-- **Harden:** **Attendees** endpoint authorized **only** for **activity owner** (replace or narrow current `ActivityPolicy::show`-style access for this route in production).
+- **Harden:** **Registrations** endpoint authorized **only** for **activity owner** (replace or narrow current `ActivityPolicy::show`-style access for this route in production).
 
 **Explicitly out of V1:**
 
@@ -61,7 +61,7 @@
 
 ## While MoveConcept gaps are open (parallel work)
 
-McCheck development can start **before** auth, **my activities**, and **owner-only attendees** exist. Use **typed API interfaces + mocks** (fixtures or e.g. MSW) behind a flag such as `EXPO_PUBLIC_USE_MOCK_API` (omit or not `false` = mocks) so screens and navigation are real; swap the implementation when the backend is ready.
+McCheck development can start **before** staging parity is finalized. Use **typed API interfaces + mocks** (fixtures or e.g. MSW) behind a flag such as `EXPO_PUBLIC_USE_MOCK_API` (omit or not `false` = mocks) so screens and navigation are real; swap the implementation when backend staging is ready.
 
 | Track | What to do |
 |-------|------------|
@@ -88,8 +88,8 @@ Do this **once** staging (or prod) exposes the agreed contract from the handoff 
 | 2 | **Auth:** Wire email + Google flows to real endpoints; store token securely; verify `Authorization` on a smoke request. |
 | 3 | **My activities:** Replace mock `getMyActivities()` with real `GET` (owner, upcoming/ongoing); fix list mapping if field names differ from mocks. |
 | 4 | **Activity detail:** Confirm `GET /api/activities/{id}` matches types; handle 403/404. |
-| 5 | **Guest list:** Wire `getAttendees()` to real route; confirm **only owner** can load (retest with non-owner token — expect 403). |
-| 6 | **Profile:** User from `EXPO_PUBLIC_AUTH_ME_PATH` (default `/api/user`) after login — align response with `extractUser` in `AuthContext` (or agreed alternative). |
+| 5 | **Guest list:** Wire registrations route; confirm **only owner** can load (retest with non-owner token — expect 403). |
+| 6 | **Profile:** User from `EXPO_PUBLIC_AUTH_ME_PATH` (default `/api/auth/me`) after login — align response with `extractUser` in `AuthContext` (or agreed alternative). |
 | 7 | **Remove / narrow mocks** — keep fixtures for **tests** only if useful. |
 | 8 | **E2E pass** on staging: login → list → detail → search attendees → logout. |
 | 9 | Update docs if response shapes or query params differ from what McCheck assumed. |
@@ -102,12 +102,12 @@ Use this as the first working sequence once staging API pieces are delivered.
 
 | Order | Owner | Task | Done when |
 |------|-------|------|-----------|
-| 1 | MoveConcept | Confirm staging URLs + test organizer credentials + sample owned activity with attendees | Mobile can authenticate and load non-empty test data |
+| 1 | MoveConcept | Confirm staging URLs + test organizer credentials + sample owned activity with registrations | Mobile can authenticate and load non-empty test data |
 | 2 | McCheck | Switch env to staging (`EXPO_PUBLIC_API_BASE_URL`) and disable mocks (`EXPO_PUBLIC_USE_MOCK_API=false`) | App boots against real backend without mock fallback |
 | 3 | McCheck | Wire organizer auth end-to-end (email + Google when backend is ready — today live **Google** throws until OAuth is implemented), persist token, logout via `EXPO_PUBLIC_AUTH_LOGOUT_PATH` if provided | Login survives app restart and authorized calls succeed |
 | 4 | McCheck | Integrate owner-scoped activities list API and map payload to list cards | Active events screen shows only owned upcoming/ongoing events |
 | 5 | McCheck | Integrate event detail with 403/404 handling and user-facing fallback states | Detail screen works for owned events and fails safely otherwise |
-| 6 | McCheck + MoveConcept | Integrate attendees with owner-only authorization verification | Owner loads attendees; non-owner test gets 403 |
+| 6 | McCheck + MoveConcept | Integrate registrations with owner-only authorization verification | Owner loads registrations; non-owner test gets 403 |
 | 7 | McCheck | Remove mock-first assumptions from runtime paths (keep mocks only for tests/dev fallback) | Normal app flow runs fully on real API |
 | 8 | McCheck | Run staging QA pass (login → events → detail → guest list search/pagination → profile/logout) | No blocker regressions in primary path |
 | 9 | McCheck | Freeze V1 release candidate scope and create Phase B backlog (scanner/check-in) | V1 integration milestone signed off |
@@ -187,3 +187,5 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 | 1.5 | 2026-04-09 | Env var names aligned with Expo (`EXPO_PUBLIC_*`); profile integration step matches `AuthContext`; Google live caveat in Phase 2 |
 | 1.6 | 2026-04-09 | Snapshot: mock scenarios + error/retry hardening; pointer to Phase A mock QA table |
 | 1.7 | 2026-04-09 | CI (typecheck + tests), EAS `eas.json`, staging runbook, OAuth notes, store checklist, observability stub |
+| 1.8 | 2026-04-14 | Updated profile default endpoint reference to `/api/auth/me` |
+| 1.9 | 2026-04-14 | Replaced stale attendees/my-activities wording with current registrations and staging-parity status |

@@ -25,13 +25,18 @@ export function mapActivity(raw: unknown): Activity {
 
 export function mapAttendee(raw: unknown): AttendeeRow {
   const o = raw as Record<string, unknown>;
-  const u = (o.user ?? o) as Record<string, unknown>;
+  const isGuest = Boolean(o.isGuest ?? o.is_guest);
+  const u = ((isGuest ? o.guest : o.user) ?? o) as Record<string, unknown>;
+  const displayName =
+    pickDisplayName(u) ??
+    (typeof u.email === 'string' && u.email.trim() ? u.email.trim() : null) ??
+    'Guest';
   return {
     user: {
       id: Number(u.id ?? 0),
-      displayName: pickDisplayName(u) ?? 'Guest',
+      displayName,
     },
-    isBlocked: Boolean(o.isBlocked ?? o.is_blocked),
+    isBlocked: Boolean(o.isBlocked ?? o.is_blocked ?? false),
   };
 }
 

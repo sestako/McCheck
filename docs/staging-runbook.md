@@ -15,7 +15,8 @@ Use this when MoveConcept exposes **staging** and McCheck switches from mocks to
 - [ ] Staging **HTTPS base URL** documented and reachable from office/VPN.
 - [ ] Test **organizer** account (email + password or agreed auth).
 - [ ] At least one **owned** activity with **registrations** (non-empty guest list).
-- [ ] [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) items **1–3** deployed: mobile auth, owner activities list, owner-only attendees.
+- [ ] Backend confirms currently available endpoints in OpenAPI are deployed to staging.
+- [ ] Missing items from [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) are tracked separately (do not block this pass).
 
 ## One-time client setup (`mobile/`)
 
@@ -25,20 +26,54 @@ Use this when MoveConcept exposes **staging** and McCheck switches from mocks to
 4. If auth paths differ from defaults, set `EXPO_PUBLIC_AUTH_*` paths.
 5. Restart Expo with cache clear: `npx expo start --clear`.
 
-## Smoke test (~10 minutes)
+## Endpoint smoke test (~20-30 minutes)
 
-1. **Login** (email) — success, token stored (Profile → Token in session = Yes).
-2. **Active events** — list matches organizer-only, upcoming/ongoing filter reasonable.
-3. **Event detail** — loads; 404 on invalid id shows user-facing message + Retry.
-4. **Guest list** — pagination + search; non-owner token gets **403** on attendees (backend check).
-5. **Profile** — shows live hint; **Sign out** clears session.
+### A. Auth contract
+
+1. **POST `/auth/login` success**
+   - Use organizer credentials.
+   - Confirm app reaches event list and session persists after app restart.
+2. **POST `/auth/login` failure**
+   - Wrong password.
+   - Confirm user-friendly error copy is shown (no raw JSON dump).
+3. **GET `/auth/me`**
+   - Confirm profile identity matches logged-in organizer.
+4. **DELETE `/auth/logout`**
+   - Confirm session is cleared and protected screens are no longer accessible.
+
+### B. Activities list contract
+
+5. **GET `/auth/users/me/activities` happy path**
+   - Confirm list renders and belongs to current organizer.
+   - Confirm date/state formatting and no layout issues with real data.
+6. **List edge checks**
+   - Empty list account (if available) shows empty state.
+   - Very long activity title does not break card layout.
+
+### C. Registrations contract
+
+7. **GET `/activities/{activity}/registrations` page 1**
+   - Confirm rows render names and blocked badge logic.
+8. **Pagination**
+   - Scroll/load next page and verify no duplicate rows or crashes.
+9. **Forbidden case**
+   - Test non-owner activity if available; confirm expected `403` UX.
+
+### D. Known gaps handling (expected for now)
+
+10. **No single-detail endpoint**
+    - Detail screen should fail gracefully or use list payload fallback without crash.
+11. **No server search param**
+    - Search behavior should be clearly marked as temporary/client-side fallback.
+12. **No counts in `MyActivityResource`**
+    - Count UI should degrade gracefully (hidden/placeholder), never show broken values.
 
 **Pass:** primary path works; no unexpected red screens. **Fail:** open ticket with HTTP status, response snippet (no secrets), and screen.
 
 ## When something breaks
 
 1. Confirm **base URL** and **mock flag** in Profile.
-2. Compare JSON to [Appendix A](./moveconcept-backend-handoff.md) in the handoff doc.
+2. Compare payload with current app mappers in `mobile/src/api/real/`.
 3. Re-run `npm test` and `npm run typecheck` in `mobile/`.
 
 ## Document control
@@ -46,3 +81,5 @@ Use this when MoveConcept exposes **staging** and McCheck switches from mocks to
 | Version | Date | Notes |
 |---------|------|--------|
 | 1.0 | 2026-04-09 | Initial runbook |
+| 1.1 | 2026-04-13 | Replaced generic smoke list with endpoint-by-endpoint 20-30 min checklist; aligned with current missing-items handoff doc |
+| 1.2 | 2026-04-14 | Updated auth/logout and my-activities endpoint names to current API contract |

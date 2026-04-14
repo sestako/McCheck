@@ -4,7 +4,7 @@ import { LoginScreen } from '../LoginScreen';
 
 jest.mock('../../config/env', () => ({
   API_BASE_URL: 'https://test.invalid',
-  AUTH_LOGIN_PATH: '/api/login',
+  AUTH_LOGIN_PATH: '/api/auth/login',
   USE_MOCK_API: true,
 }));
 

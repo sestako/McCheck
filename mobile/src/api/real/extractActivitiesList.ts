@@ -7,9 +7,10 @@ export function extractActivitiesList(body: Record<string, unknown> | null): unk
   const data = (root.data as Record<string, unknown> | unknown[] | undefined) ?? root;
 
   if (Array.isArray(data)) return data;
-  if (Array.isArray((data as { activities?: unknown }).activities)) {
-    return (data as { activities: unknown[] }).activities;
-  }
+  const activities = (data as { activities?: unknown }).activities;
+  if (Array.isArray(activities)) return activities;
+  const activitiesObj = activities as { data?: unknown } | undefined;
+  if (Array.isArray(activitiesObj?.data)) return activitiesObj.data;
   if (Array.isArray((root as { activities?: unknown }).activities)) {
     return (root as { activities: unknown[] }).activities;
   }

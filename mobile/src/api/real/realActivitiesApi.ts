@@ -38,10 +38,10 @@ async function parseJson(res: Response): Promise<unknown> {
   }
 }
 
-/** Expected when MoveConcept adds GET /api/activities/mine (or equivalent). */
+/** Uses documented MoveConcept endpoint for organizer activities. */
 async function fetchMyActivities(getToken: TokenGetter): Promise<Activity[]> {
   const headers = await authHeaders(getToken);
-  const url = `${API_BASE_URL}/api/activities/mine`;
+  const url = `${API_BASE_URL}/api/auth/users/me/activities`;
   const res = await fetch(url, { headers });
   const body = (await parseJson(res)) as Record<string, unknown> | null;
   if (!res.ok) {
@@ -83,7 +83,7 @@ async function fetchAttendees(
   const params = new URLSearchParams({ page: String(page) });
   if (search?.trim()) params.set('search', search.trim());
   const res = await fetch(
-    `${API_BASE_URL}/api/activities/${activityId}/attendees?${params}`,
+    `${API_BASE_URL}/api/activities/${activityId}/registrations?${params}`,
     { headers }
   );
   const body = (await parseJson(res)) as Record<string, unknown> | null;
@@ -94,13 +94,22 @@ async function fetchAttendees(
     );
   }
   const data = (body?.data ?? body) as {
-    attendees?: { data?: unknown[]; current_page?: number; last_page?: number };
+    registrations?: {
+      data?: unknown[];
+      meta?: {
+        currentPage?: number;
+        current_page?: number;
+        lastPage?: number;
+        last_page?: number;
+      };
+    };
   };
-  const paginated = data?.attendees;
+  const paginated = data?.registrations;
   const rows = Array.isArray(paginated?.data) ? paginated!.data! : [];
   const items: AttendeeRow[] = rows.map((row) => mapAttendee(row));
-  const current = paginated?.current_page ?? page;
-  const last = paginated?.last_page ?? current;
+  const meta = paginated?.meta;
+  const current = meta?.currentPage ?? meta?.current_page ?? page;
+  const last = meta?.lastPage ?? meta?.last_page ?? current;
   return {
     items,
     page: current,
