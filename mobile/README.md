@@ -51,24 +51,26 @@ Or install the CLI globally: `npm install -g eas-cli`, then `eas init`.
 
 ### TestFlight (iOS production)
 
-1. **Build** (store distribution, auto-increments iOS build number):
+1. **Version:** Bump `expo.version` in `app.json` when you want a new **marketing version** shown in TestFlight (e.g. `1.0.1`). **`eas.json`** uses `appVersionSource: "remote"` and **`production.autoIncrement`**, so EAS still **auto-increments the iOS build number** on each production build.
+
+2. **Build** (store distribution):
 
    ```bash
    cd mobile
    npx eas-cli@latest build --platform ios --profile production
    ```
 
-2. **Submit** the finished build to App Store Connect / TestFlight (interactive — picks the app and credentials):
+3. **Submit** to App Store Connect / TestFlight:
 
    ```bash
-   npx eas-cli@latest submit --platform ios --profile production --id <EAS_BUILD_ID>
+   npx eas-cli@latest submit --platform ios --profile production --latest
    ```
 
-   Example: after a build completes, copy the build ID from the Expo dashboard URL (`.../builds/<id>`).
+   Or submit a specific build: `--id <EAS_BUILD_ID>` (from the Expo dashboard URL `.../builds/<id>`).
 
-3. **Non-interactive / CI:** `eas.json` → `submit.production.ios.ascAppId` is set for this app. To change apps, update it (Apple ID is under App Store Connect → *App Information* → **Apple ID**). See [Configure EAS Submit](https://docs.expo.dev/submit/eas-json/).
+4. **Non-interactive / CI:** `eas.json` → `submit.production.ios.ascAppId` is set for this app. To change apps, update it (Apple ID is under App Store Connect → *App Information* → **Apple ID**). See [Configure EAS Submit](https://docs.expo.dev/submit/eas-json/).
 
-4. **EAS environment variables:** the `preview` and `production` profiles in `eas.json` embed staging `EXPO_PUBLIC_*` values; you can override via the Expo dashboard **Environment variables** (account- or project-wide) if needed.
+5. **EAS environment variables:** the `preview` and `production` profiles in `eas.json` embed staging `EXPO_PUBLIC_*` values; you can override via the Expo dashboard **Environment variables** (account- or project-wide) if needed.
 
 ## Phase A (pre-backend)
 
@@ -76,9 +78,11 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 
 ## Configuration
 
-- Copy `.env.example` to `.env` (or prefer `.env.local`) and set `EXPO_PUBLIC_API_BASE_URL` when using the real API.
-- Set `EXPO_PUBLIC_USE_MOCK_API=false` to switch off mocks (requires working auth + `/api/auth/users/me/activities` + token login).
-- If your backend auth routes differ, set:
+- Copy `.env.example` to **`.env`** or **`.env.local`** (gitignored; good for machine-specific overrides) in `mobile/`, then set `EXPO_PUBLIC_*` as needed.
+- **`EXPO_PUBLIC_*` is inlined when Metro bundles the app.** After changing env files, restart the dev server; if values look stuck, run `npx expo start --clear`.
+- **Local env vs EAS builds:** Variables in `.env` / `.env.local` apply when you run **`expo start`** from this folder. **EAS cloud builds** do not read those files unless you explicitly load them in CI; they use **`eas.json`** `env` and any **Expo dashboard → Environment variables** for the profile. If TestFlight shows a different API URL or login path than your simulator, compare Profile in the app with your `eas.json` / dashboard values.
+- For **staging / real MoveConcept**, set `EXPO_PUBLIC_USE_MOCK_API=false` and `EXPO_PUBLIC_API_BASE_URL` (no trailing slash). Auth defaults are **`/api/auth/login`**, **`/api/auth/me`**, **`/api/auth/logout`**. Do not use **`/api/login`** — that path returns **404** on MoveConcept. (`src/config/env.ts` maps the legacy `/api/login` value to `/api/auth/login` if it slips in from an old env.)
+- If your backend auth routes genuinely differ, override:
   - `EXPO_PUBLIC_AUTH_LOGIN_PATH`
   - `EXPO_PUBLIC_AUTH_ME_PATH`
   - `EXPO_PUBLIC_AUTH_LOGOUT_PATH`
