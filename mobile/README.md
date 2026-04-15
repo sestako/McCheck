@@ -68,6 +68,10 @@ Or install the CLI globally: `npm install -g eas-cli`, then `eas init`.
 
    Or submit a specific build: `--id <EAS_BUILD_ID>` (from the Expo dashboard URL `.../builds/<id>`).
 
+   **Shell tip:** If your prompt already ends with `mobile` (you are inside `mobile/`), **do not** run `cd mobile` again — it will error (`no such file or directory`). Run `npx eas-cli@latest submit …` only.
+
+   **Submit failed after an earlier success?** `--latest` reuses the same finished build. **Apple usually accepts each binary only once.** Open the submission URL from the CLI output (Expo dashboard → that submission) for the exact Transporter / ASC error. To ship again, run a **new** `eas build` first, then `submit --latest` (or `--id` of the new build).
+
 4. **Non-interactive / CI:** `eas.json` → `submit.production.ios.ascAppId` is set for this app. To change apps, update it (Apple ID is under App Store Connect → *App Information* → **Apple ID**). See [Configure EAS Submit](https://docs.expo.dev/submit/eas-json/).
 
 5. **EAS environment variables:** the `preview` and `production` profiles in `eas.json` embed staging `EXPO_PUBLIC_*` values; you can override via the Expo dashboard **Environment variables** (account- or project-wide) if needed.
