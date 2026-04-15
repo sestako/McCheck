@@ -26,6 +26,8 @@ npm start
 
 Mocks are **on by default** (no backend required). See `mobile/README.md` and `docs/mcheck-implementation-plan.md`.
 
+**EAS (`eas build`, `eas submit`):** run from **`mobile/`** — that folder contains `eas.json`. Running from the repo root shows *Run this command inside a project directory.*
+
 ## Documentation
 
 - [Implementation plan](docs/mcheck-implementation-plan.md) — V1 scope, parallel work, integration when backend is ready
