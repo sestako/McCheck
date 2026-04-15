@@ -10,10 +10,15 @@ export function liveApiTroubleshootingHint(): string {
  */
 export function userFriendlyApiMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.status === 401) return 'Session expired. Please sign in again.';
+    const m = error.message.trim();
+    if (error.status === 401) {
+      // Login failure is 401 too — prefer server-parsed message (e.g. invalid credentials).
+      if (m) return m;
+      return 'Session expired. Please sign in again.';
+    }
     if (error.status === 403) return "You don't have permission to view this.";
     if (error.status === 404) return 'Not found.';
-    if (error.message.trim()) return error.message;
+    if (m) return m;
     return 'Something went wrong. Please try again.';
   }
   if (error instanceof Error) {

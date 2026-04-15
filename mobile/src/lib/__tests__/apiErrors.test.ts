@@ -8,8 +8,14 @@ describe('liveApiTroubleshootingHint', () => {
 });
 
 describe('userFriendlyApiMessage', () => {
-  it('maps 401', () => {
-    expect(userFriendlyApiMessage(new ApiError('x', 401))).toContain('sign in');
+  it('maps 401 with empty message to session hint', () => {
+    expect(userFriendlyApiMessage(new ApiError('', 401))).toContain('sign in');
+  });
+
+  it('maps 401 with message to that message (e.g. login failure)', () => {
+    expect(userFriendlyApiMessage(new ApiError('Invalid email or password.', 401))).toBe(
+      'Invalid email or password.'
+    );
   });
 
   it('maps 403', () => {

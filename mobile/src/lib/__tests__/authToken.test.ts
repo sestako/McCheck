@@ -31,6 +31,24 @@ describe('parseApiErrorBody', () => {
     expect(parseApiErrorBody({ errors: { email: ['Invalid'] } }, 'fallback')).toBe('Invalid');
   });
 
+  it('uses data.errors (MoveConcept INVALID_CONTENT)', () => {
+    expect(
+      parseApiErrorBody(
+        {
+          code: 'INVALID_CONTENT',
+          data: { errors: { deviceName: ['Device name is required.'] } },
+        },
+        'fallback'
+      )
+    ).toBe('Device name is required.');
+  });
+
+  it('maps INVALID_CREDENTIALS code', () => {
+    expect(parseApiErrorBody({ code: 'INVALID_CREDENTIALS' }, 'fallback')).toBe(
+      'Invalid email or password.'
+    );
+  });
+
   it('uses fallback', () => {
     expect(parseApiErrorBody({}, 'fallback')).toBe('fallback');
   });
