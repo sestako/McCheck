@@ -92,6 +92,7 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
   - `EXPO_PUBLIC_MY_ACTIVITIES_LIST_PATH` (only if a non-default list URL is required)
 - **Mock-only QA:** `EXPO_PUBLIC_MOCK_SCENARIO` (`login_fail`, `activities_fail`, `detail_404`, `guests_403`, `edge_layout`) — see [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md).
 - **Crash reporting:** `@sentry/react-native` is installed; `app.json` includes the Sentry config plugin. Set **`EXPO_PUBLIC_SENTRY_DSN`** (EAS env for release builds). `initObservability()` calls **`Sentry.init`** only outside **`__DEV__`**; the root component is **`Sentry.wrap(App)`** for React error reporting. **`reportError`** forwards to **`Sentry.captureException`** after init.
+- **EAS builds:** `eas.json` sets **`SENTRY_DISABLE_AUTO_UPLOAD=true`** so cloud builds do not require `sentry-cli` org/auth (source map upload is off; runtime crash reporting via DSN still works). To enable upload later, remove that flag and add Sentry **org**, **project**, and **`SENTRY_AUTH_TOKEN`** as EAS secrets, or set **`SENTRY_ALLOW_FAILURE=true`** if uploads may fail without failing the build.
 - **Android release builds:** `eas.json` production profile sets `android.buildType` to **`app-bundle`** for Play Console. Run `eas build --platform android --profile production` when ready (same env vars as iOS; see [../docs/mcheck-android-google-oauth-setup.md](../docs/mcheck-android-google-oauth-setup.md)).
 
 ## Layout
