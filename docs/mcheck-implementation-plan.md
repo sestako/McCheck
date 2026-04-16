@@ -19,7 +19,7 @@
 **Still pending / next validation (after or parallel to Phase A):**
 
 - Full **staging smoke** per [staging-runbook.md](./staging-runbook.md) on every release (detail, registrations **search**, owner **403** cases — **activities list** already validated with web-created event).
-- **Backend / product:** confirm **owner-only** registrations access in production; resolve any drift between live staging and `api-docs.json`.
+- **Backend / product:** **Registrations are owner-only in production** (MoveConcept, confirmed 2026-04-16). Continue to resolve any drift between live staging and `api-docs.json`.
 - **Android:** same Google OAuth + EAS path when you cut an Android build (SHA-1 / package — see [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md)).
 - **V2 (later):** scanner / check-in — see **Below the line — V2** in this doc; do not start until Phase 2 kickoff steps **1–8** are green on staging (rule in Phase 2 section).
 
@@ -38,7 +38,7 @@
 | **Auth** | Email + Google → **same `users` as web**; store session/token securely on device; logout. |
 | **My events** | List **activities I own** that are **upcoming / ongoing** (exact filter = product + API contract). |
 | **Event detail** | Screen from `GET /api/activities/{id}` (or fields from list if the list endpoint is enriched). |
-| **Guest list** | Paginated list + search, wired to registrations API **after** backend restricts access to **owner** (see prerequisites). |
+| **Guest list** | Paginated list + search, wired to registrations API; **owner-only** access **confirmed** on MoveConcept production (2026-04-16). |
 | **Profile** | Read-only self profile + logout (minimal). |
 | **Design** | Stitch as reference; implement natively (Forest Minimalist / tokens in `mcheck-design-vs-backend.md`). |
 
@@ -46,7 +46,7 @@
 
 - **New:** `GET` (or equivalent) **`activities I own`** with filters for **upcoming + ongoing**, pagination, fields needed for list rows.
 - **Auth for mobile:** Token flow for **email** + **Google** social login → same user as web (mobile implemented; keep OpenAPI + staging in sync).
-- **Harden:** **Registrations** endpoint authorized **only** for **activity owner** (replace or narrow current `ActivityPolicy::show`-style access for this route in production).
+- **Registrations (done):** **`GET /activities/{activity}/registrations`** is **owner-only** in production (confirmed MoveConcept 2026-04-16); non-owner receives **403**.
 
 **Explicitly out of V1:**
 
@@ -104,7 +104,7 @@ Use this as the first working sequence once staging API pieces are delivered.
 | 3 | McCheck | Organizer auth end-to-end (**email** + **Google** via `/api/auth/login/social/google`), persist token, logout | Verified on simulator + **TestFlight**; login survives app restart |
 | 4 | McCheck | Integrate owner-scoped activities list API and map payload to list cards | Active events screen shows only owned upcoming/ongoing events |
 | 5 | McCheck | Integrate event detail with 403/404 handling and user-facing fallback states | Detail screen works for owned events and fails safely otherwise |
-| 6 | McCheck + MoveConcept | Integrate registrations with owner-only authorization verification | Owner loads registrations; non-owner test gets 403 |
+| 6 | McCheck + MoveConcept | Integrate registrations with owner-only authorization verification | Owner loads registrations; non-owner gets **403** — **policy confirmed production 2026-04-16** |
 | 7 | McCheck | Remove mock-first assumptions from runtime paths (keep mocks only for tests/dev fallback) | Normal app flow runs fully on real API |
 | 8 | McCheck | Run staging QA pass (login → events → detail → guest list search/pagination → profile/logout) | No blocker regressions in primary path |
 | 9 | McCheck | Freeze V1 release candidate scope and create Phase B backlog (scanner/check-in) | V1 integration milestone signed off |
@@ -190,3 +190,4 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 | 2.1 | 2026-04-16 | Status snapshot: email + Google on staging/TestFlight; Phase 2 row 3 marked verified |
 | 2.2 | 2026-04-16 | Active track: Phase A (mock-first QA) before next release spike; fix V2 vs Phase 2 wording |
 | 2.3 | 2026-04-16 | Staging: web-created organizer event visible in app Active events |
+| 2.4 | 2026-04-16 | **Recorded:** MoveConcept production — registrations endpoint is **owner-only** (no cross-organizer guest list enumeration) |

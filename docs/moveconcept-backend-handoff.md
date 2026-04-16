@@ -13,7 +13,7 @@
 | Area | Route / notes |
 |------|----------------|
 | Activity detail | `GET /activities/{activity}` → `data.activity` as **`ActivityResource`** (includes `owner`, `registrationsCount`, `attendingGuestsCount`) |
-| Registrations | `GET /activities/{activity}/registrations` — query: `page`, `perPage`, optional **`search`** |
+| Registrations | `GET /activities/{activity}/registrations` — query: `page`, `perPage`, optional **`search`** — **owner-only** in production (confirmed 2026-04-16; non-owner **403**) |
 | Email login | `POST /auth/login` — `LoginRequest`: `email`, `password`, `deviceName` |
 | Google (social) | `POST /auth/login/social/{provider}` — `provider` enum **`google`**; body **`LoginViaSocialRequest`**: required **`accessToken`**, **`deviceName`**; same success shape as email login (`UserWithTokenResponse`) |
 | Session | `DELETE /auth/logout`, `GET /auth/me` |
@@ -26,7 +26,7 @@ Implementers should read field-level detail in **`api-docs.json`** (`components.
 
 ## Outside the OpenAPI file
 
-- **Authorization:** Owner-only access for organizer flows should be verified on staging against product rules (see [mcheck-design-vs-backend.md](./mcheck-design-vs-backend.md)).
+- **Authorization:** **`GET …/registrations`** is **owner-only** in **production** (MoveConcept, confirmed 2026-04-16). Re-verify on **staging** after backend deploys if policies diverge (see [mcheck-design-vs-backend.md](./mcheck-design-vs-backend.md)).
 - **Google mobile:** The documented exchange uses **`accessToken`** (token from the social provider as the API expects). Align the native client with that contract; do not assume a separate `POST /auth/google` or `idToken`-only body unless the server is changed and the spec updated.
 
 ---
@@ -45,3 +45,4 @@ Versions **1.0–2.0** of this document listed blocking backend requests before 
 | 2.0 | 2026-04-13 | Missing-items list tied to OpenAPI only |
 | 3.0 | 2026-04-16 | Coordination doc; OpenAPI synced to MoveConcept staging export |
 | 3.1 | 2026-04-16 | Note: mobile staging + TestFlight auth (email + Google) verified against live API |
+| 3.2 | 2026-04-16 | **Recorded:** `GET …/registrations` is **owner-only** in production (403 for non-owner) |

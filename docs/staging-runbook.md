@@ -20,6 +20,7 @@ Use this when testing McCheck against **MoveConcept staging** (or after backend 
 - [ ] Backend confirms currently available endpoints in OpenAPI are deployed to staging.
 - [ ] Any gaps between live staging and [api-docs.json](./api-docs.json) are tracked as tickets (policy-only items may still live in [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md)).
 - [ ] Optional: **EXPO_PUBLIC_SENTRY_DSN** set on the EAS **production** environment so release builds report crashes (Sentry init runs only outside `__DEV__`).
+- [x] **Registrations authorization (MoveConcept production, 2026-04-16):** `GET /activities/{id}/registrations` is **owner-only**; non-owner receives **403** (no guest-list enumeration across organizers).
 
 ## One-time client setup (`mobile/`)
 
@@ -90,3 +91,4 @@ Use this when testing McCheck against **MoveConcept staging** (or after backend 
 | 1.6 | 2026-04-16 | Document merged `filter=upcoming` + `ongoing` for my-activities (client fix for empty list) |
 | 1.7 | 2026-04-16 | Correct my-activities URL: `GET /users/me/activities` (`/api/users/me/activities`); document `draft` merge; `/api/auth/users/me/activities` 404s on staging |
 | 1.8 | 2026-04-16 | Optional precondition: `EXPO_PUBLIC_SENTRY_DSN` on EAS for release crash reporting |
+| 1.9 | 2026-04-16 | Recorded MoveConcept **owner-only** registrations policy (production); staging re-check if policies diverge |

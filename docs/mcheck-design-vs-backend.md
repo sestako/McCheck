@@ -78,9 +78,9 @@ After duplicate cleanup, treat these as the **UX targets** (names from Stitch MC
 
 - `ActivityRegistration`: `uuid`, `activity_id`, polymorphic `model` (User/Guest); **no timestamps / no checked-in flag** in the model inspected
 
-**Authorization note (important for McCheck):**
+**Authorization (McCheck / MoveConcept) — confirmed 2026-04-16:**
 
-- Registrations access should be validated as **owner-only** for organizer/staff workflows; if current policy is broader than intended, tighten before production rollout.
+- **`GET /api/activities/{activity}/registrations`** is **owner-only** in **production**: only the **activity owner** may load the guest list; another authenticated organizer **cannot** enumerate registrations by guessing activity IDs (expects **403**).
 
 ---
 
@@ -247,4 +247,5 @@ Use this as a living checklist (copy into Issues/Projects as needed).
 | 1.2 | 2026-04-09 | Added build status after mobile UI implementation and QA validation |
 | 1.3 | 2026-04-14 | Refreshed API status/endpoint references to current OpenAPI contract (`/api/auth/*`, `/api/users/me/activities`, registrations) |
 | 1.4 | 2026-04-16 | Corrected my-activities path: `/api/users/me/activities` (not under `/api/auth/users/…`) |
-| 1.4 | 2026-04-14 | Removed stale web-login/attendees assumptions; clarified staging parity and registrations wording |
+| 1.5 | 2026-04-14 | Removed stale web-login/attendees assumptions; clarified staging parity and registrations wording |
+| 1.6 | 2026-04-16 | **Confirmed:** registrations list endpoint is **owner-only** in production (403 for non-owner) |
