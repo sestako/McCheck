@@ -1,6 +1,6 @@
 # McCheck mobile (Expo)
 
-React Native app for **organizers**: active events → detail → guest list. Uses **mock API by default** until MoveConcept endpoints from `docs/moveconcept-backend-handoff.md` are ready.
+React Native app for **organizers**: active events → detail → guest list. Uses **mock API by default**; live contract is `docs/api-docs.json` (see `docs/moveconcept-backend-handoff.md`).
 
 ## Current state (2026-04-09)
 
@@ -86,6 +86,7 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 - **`EXPO_PUBLIC_*` is inlined when Metro bundles the app.** After changing env files, restart the dev server; if values look stuck, run `npx expo start --clear`.
 - **Local env vs EAS builds:** Variables in `.env` / `.env.local` apply when you run **`expo start`** from this folder. **EAS cloud builds** do not read those files unless you explicitly load them in CI; they use **`eas.json`** `env` and any **Expo dashboard → Environment variables** for the profile. If TestFlight shows a different API URL or login path than your simulator, compare Profile in the app with your `eas.json` / dashboard values.
 - For **staging / real MoveConcept**, set `EXPO_PUBLIC_USE_MOCK_API=false` and `EXPO_PUBLIC_API_BASE_URL` (no trailing slash). Auth defaults are **`/api/auth/login`**, **`/api/auth/me`**, **`/api/auth/logout`**. Do not use **`/api/login`** — that path returns **404** on MoveConcept. (`src/config/env.ts` maps the legacy `/api/login` value to `/api/auth/login` if it slips in from an old env.)
+- **Google sign-in (live API):** set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` plus **`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`** on iOS or **`EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`** on Android. The app opens the system browser (`expo-auth-session`), then **POST**s the Google token to **`/api/auth/login/social/google`** as `accessToken` (see OpenAPI `LoginViaSocialRequest`). For **Expo Go**, add redirect URI `https://auth.expo.io/@YOUR_EXPO_USERNAME/mccheck` to the Google **Web** client (see `.env.example`). **Android:** EAS keystore + SHA-1 + Google Cloud Android OAuth — step-by-step [../docs/mcheck-android-google-oauth-setup.md](../docs/mcheck-android-google-oauth-setup.md).
 - If your backend auth routes genuinely differ, override:
   - `EXPO_PUBLIC_AUTH_LOGIN_PATH`
   - `EXPO_PUBLIC_AUTH_ME_PATH`
@@ -98,7 +99,8 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 |------|------|
 | `src/api/` | Types, mock + real clients (`createActivitiesApi`), `real/mappers.ts` |
 | `src/config/env.ts` | `EXPO_PUBLIC_*` flags |
-| `src/context/AuthContext.tsx` | Token storage (SecureStore), mock sign-in |
+| `src/context/AuthContext.tsx` | Token storage (SecureStore), email + Google exchange |
+| `src/auth/GoogleSignInButton.tsx` | Google OAuth prompt + MoveConcept social login |
 | `src/lib/isActiveEvent.ts` | Upcoming / ongoing filter |
 | `src/navigation/` | Stack navigator |
 | `src/screens/` | Login, Active events, Detail, Guest list, Profile |

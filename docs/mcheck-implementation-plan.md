@@ -22,9 +22,9 @@
 
 **Still pending (backend-dependent):**
 
-- Staging parity validation for auth contract (email + `deviceName`; **Google** is mock-only until OAuth is wired — live `signInWithGoogle` throws)
+- Staging parity validation for auth contract (email + `deviceName`; **Google** is mock-only in app until `POST /auth/login/social/google` is wired — live `signInWithGoogle` throws)
 - Production authorization hardening for organizer-only access to registrations data
-- Optional V1 quality-of-life additions from handoff doc (`search` on registrations, list counters)
+- Mobile wiring to match **`docs/api-docs.json`** where not yet implemented (`search` on registrations, list counters, social login body fields)
 
 ## V1 — organizer app at the door (read-focused)
 
@@ -72,7 +72,7 @@ McCheck development can start **before** staging parity is finalized. Use **type
 | **API layer** | TypeScript types + functions: `getMyActivities()`, `getActivity(id)`, `getAttendees(id, page, search)` — **mock + real** implementations behind one interface. |
 | **Screens (UI)** | Login layout (email + Google); active events list; event detail; guest list + search + pagination UX; profile + logout (clears local session in mock mode). |
 | **Product guard** | Central helper e.g. `isActiveEvent(activity)` for “upcoming or ongoing” — adjust in **one place** when backend contract is final. |
-| **Coordination** | Share **mock JSON shapes** with MoveConcept so live API responses stay aligned; track [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) items as tickets. **Appendix A–B** in that doc are the written contract (canonical JSON + API→UI field mapping). |
+| **Coordination** | Share **mock JSON shapes** with MoveConcept so live API responses stay aligned; treat **`docs/api-docs.json`** as the OpenAPI contract and file tickets for any drift from staging. See [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) for a short index and policy notes. |
 
 **Avoid:** hard-coding URLs or response shapes only inside screens — keep them in the **API module** so the swap is trivial.
 
@@ -80,7 +80,7 @@ McCheck development can start **before** staging parity is finalized. Use **type
 
 ## When MoveConcept gaps are filled (integration checklist)
 
-Do this **once** staging (or prod) exposes the agreed contract from the handoff doc.
+Do this **once** staging (or prod) matches the contract in **`docs/api-docs.json`** (refresh that file when the backend export changes).
 
 | Step | Action |
 |------|--------|
@@ -104,7 +104,7 @@ Use this as the first working sequence once staging API pieces are delivered.
 |------|-------|------|-----------|
 | 1 | MoveConcept | Confirm staging URLs + test organizer credentials + sample owned activity with registrations | Mobile can authenticate and load non-empty test data |
 | 2 | McCheck | Switch env to staging (`EXPO_PUBLIC_API_BASE_URL`) and disable mocks (`EXPO_PUBLIC_USE_MOCK_API=false`) | App boots against real backend without mock fallback |
-| 3 | McCheck | Wire organizer auth end-to-end (email + Google when backend is ready — today live **Google** throws until OAuth is implemented), persist token, logout via `EXPO_PUBLIC_AUTH_LOGOUT_PATH` if provided | Login survives app restart and authorized calls succeed |
+| 3 | McCheck | Wire organizer auth end-to-end (email + **Google** via `POST /auth/login/social/google` per OpenAPI when implemented in app), persist token, logout via `EXPO_PUBLIC_AUTH_LOGOUT_PATH` if provided | Login survives app restart and authorized calls succeed |
 | 4 | McCheck | Integrate owner-scoped activities list API and map payload to list cards | Active events screen shows only owned upcoming/ongoing events |
 | 5 | McCheck | Integrate event detail with 403/404 handling and user-facing fallback states | Detail screen works for owned events and fails safely otherwise |
 | 6 | McCheck + MoveConcept | Integrate registrations with owner-only authorization verification | Owner loads registrations; non-owner test gets 403 |
@@ -170,9 +170,9 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 
 - [mcheck-phase-a.md](./mcheck-phase-a.md) — Phase A (pre-backend): defaults, manual QA, tests, release hygiene.
 - [mcheck-design-vs-backend.md](./mcheck-design-vs-backend.md) — Stitch vs API gaps, co-worker model, checklist.
-- [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) — requests for MoveConcept developer (blocking API/auth/policy items).
+- [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) — OpenAPI snapshot index + coordination (policy, drift).
 - [staging-runbook.md](./staging-runbook.md) — first staging integration steps and smoke test.
-- [mcheck-google-oauth-notes.md](./mcheck-google-oauth-notes.md) — Google sign-in design stub (backend contract TBD).
+- [mcheck-google-oauth-notes.md](./mcheck-google-oauth-notes.md) — Google sign-in notes (contract: **`api-docs.json`** `LoginViaSocialRequest`).
 - [mcheck-store-release-checklist.md](./mcheck-store-release-checklist.md) — store / EAS / assets checklist.
 
 ## Document control
@@ -189,3 +189,4 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 | 1.7 | 2026-04-09 | CI (typecheck + tests), EAS `eas.json`, staging runbook, OAuth notes, store checklist, observability stub |
 | 1.8 | 2026-04-14 | Updated profile default endpoint reference to `/api/auth/me` |
 | 1.9 | 2026-04-14 | Replaced stale attendees/my-activities wording with current registrations and staging-parity status |
+| 2.0 | 2026-04-16 | OpenAPI in `api-docs.json` is canonical contract; handoff doc is coordination index; Phase 2 Google path aligned with spec |

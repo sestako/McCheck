@@ -14,6 +14,7 @@ import type { ActivitiesApi } from '../api/types';
 import { extractAuthTokenFromBody, parseApiErrorBody } from '../lib/authToken';
 import {
   API_BASE_URL,
+  AUTH_GOOGLE_SOCIAL_PATH,
   AUTH_LOGIN_PATH,
   AUTH_LOGOUT_PATH,
   AUTH_ME_PATH,
@@ -36,6 +37,8 @@ type AuthContextValue = {
   activitiesApi: ActivitiesApi;
   signInWithEmail: (email: string, _password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  /** Exchange a Google OAuth access token (or ID token if that is what the server verifies) for a MoveConcept API token. */
+  exchangeGoogleAccessToken: (googleCredential: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -130,7 +133,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser({ email, displayName: 'Organizer' });
       return;
     }
-    throw new Error('Google login not wired — implement OAuth exchange on MoveConcept.');
+    throw new Error('Use the Google button flow (OAuth) when not in mock mode.');
+  }, []);
+
+  const exchangeGoogleAccessToken = useCallback(async (googleCredential: string) => {
+    const trimmed = googleCredential.trim();
+    if (!trimmed) {
+      throw new Error('Missing Google credential.');
+    }
+
+    const res = await fetch(`${API_BASE_URL}${AUTH_GOOGLE_SOCIAL_PATH}`, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accessToken: trimmed,
+        deviceName: `McCheck-${Platform.OS}-${String(Platform.Version)}`,
+      }),
+    });
+    const body = await parseJson(res);
+    if (!res.ok) {
+      throw new ApiError(parseApiErrorBody(body, 'Google sign in failed'), res.status);
+    }
+
+    const tokenFromLogin = extractAuthTokenFromBody(body);
+    const meUser =
+      tokenFromLogin != null
+        ? await fetchMeWithToken(tokenFromLogin).catch(() => null)
+        : await fetchMeWithToken(null).catch(() => null);
+    const finalEmail = meUser?.email ?? '';
+    if (!finalEmail) {
+      throw new Error('Google login succeeded but profile has no email. Check /auth/me mapping.');
+    }
+    const finalDisplay = meUser?.displayName ?? finalEmail.split('@')[0] ?? 'Organizer';
+    const finalToken = tokenFromLogin ?? (await SecureStore.getItemAsync(TOKEN_KEY)) ?? '';
+    if (!finalToken) {
+      throw new Error('Google login succeeded but no API token was returned.');
+    }
+
+    await SecureStore.setItemAsync(TOKEN_KEY, finalToken);
+    await SecureStore.setItemAsync(USER_EMAIL_KEY, finalEmail);
+    setToken(finalToken);
+    setUser({ email: finalEmail, displayName: finalDisplay });
   }, []);
 
   const signOut = useCallback(async () => {
@@ -161,6 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       activitiesApi,
       signInWithEmail,
       signInWithGoogle,
+      exchangeGoogleAccessToken,
       signOut,
     }),
     [
@@ -170,6 +214,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       activitiesApi,
       signInWithEmail,
       signInWithGoogle,
+      exchangeGoogleAccessToken,
       signOut,
     ]
   );

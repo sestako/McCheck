@@ -7,8 +7,7 @@ import { mapActivity, mapAttendee } from './mappers';
 type TokenGetter = () => Promise<string | null>;
 
 /**
- * Calls MoveConcept JSON API. Shapes are best-effort until backend handoff is implemented;
- * adjust mappers when contract is fixed.
+ * Calls MoveConcept JSON API. Contract target: `docs/api-docs.json`; adjust mappers when the export drifts.
  */
 export function createRealActivitiesApi(getToken: TokenGetter): ActivitiesApi {
   return {

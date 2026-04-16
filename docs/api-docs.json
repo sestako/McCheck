@@ -13,7 +13,11 @@
     "servers": [
         {
             "url": "https://moveconcept.cz/api",
-            "description": "Production server"
+            "description": "Production"
+        },
+        {
+            "url": "https://staging.moveconcept.cz/api",
+            "description": "Staging"
         }
     ],
     "paths": {
@@ -40,6 +44,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/PerPageParameter"
+                    },
+                    {
+                        "$ref": "#/components/parameters/SearchParameter"
                     }
                 ],
                 "responses": {
@@ -56,8 +63,10 @@
                                         "data": {
                                             "properties": {
                                                 "registrations": {
+                                                    "description": "Paginated resource object.",
                                                     "properties": {
                                                         "data": {
+                                                            "description": "List of resources in current page.",
                                                             "type": "array",
                                                             "items": {
                                                                 "$ref": "#/components/schemas/ActivityRegistrationResource"
@@ -79,14 +88,51 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthenticated.",
+                        "$ref": "#/components/responses/UnauthenticatedResponse"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/UnauthorizedResponse"
+                    }
+                }
+            }
+        },
+        "/activities/{activity}": {
+            "get": {
+                "tags": [
+                    "Activity"
+                ],
+                "summary": "Show Activity",
+                "description": "Returns the detail of a given activity.",
+                "operationId": "f37310cd7d6937a6865f4d6176101cfa",
+                "parameters": [
+                    {
+                        "name": "activity",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activity detail.",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "code": {
                                             "type": "string",
-                                            "example": "UNAUTHENTICATED"
+                                            "example": "SUCCESS"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "activity": {
+                                                    "$ref": "#/components/schemas/ActivityResource"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -94,21 +140,14 @@
                             }
                         }
                     },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthenticatedResponse"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFoundResponse"
+                    },
                     "403": {
-                        "description": "Unauthorized.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string",
-                                            "example": "UNAUTHORIZED"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnauthorizedResponse"
                     }
                 }
             }
@@ -126,32 +165,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Created token with user model.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string",
-                                            "example": "SUCCESS"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "token": {
-                                                    "type": "string",
-                                                    "example": "1|abc123..."
-                                                },
-                                                "user": {
-                                                    "$ref": "#/components/schemas/MeResource"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UserWithTokenResponse"
                     },
                     "401": {
                         "description": "Invalid credentials.",
@@ -170,43 +184,41 @@
                         }
                     },
                     "422": {
-                        "description": "Invalid content.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string",
-                                            "example": "INVALID_CONTENT"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "errors": {
-                                                    "description": "Map of fields and their validation errors.",
-                                                    "type": "object",
-                                                    "example": {
-                                                        "email": [
-                                                            "Email must be a valid email address."
-                                                        ],
-                                                        "password": [
-                                                            "Password must be a valid password."
-                                                        ]
-                                                    },
-                                                    "additionalProperties": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
+                        "$ref": "#/components/responses/InvalidContentResponse"
+                    }
+                }
+            }
+        },
+        "/auth/login/social/{provider}": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login Via Social",
+                "description": "Creates token for user based on given token from social auth provider.",
+                "operationId": "9d4c29c18b9b58b44c27e4566ec25a47",
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "google"
+                            ]
                         }
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/LoginViaSocialRequest"
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/UserWithTokenResponse"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/InvalidContentResponse"
                     }
                 }
             }
@@ -221,7 +233,7 @@
                 "operationId": "621e0196dcdb26b7bd3bf475b66a8369",
                 "responses": {
                     "200": {
-                        "description": "User logged out successfully.",
+                        "description": "Logged out successfully.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -237,20 +249,7 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthenticated.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string",
-                                            "example": "UNAUTHENTICATED"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnauthenticatedResponse"
                     }
                 }
             }
@@ -289,20 +288,7 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthenticated.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string",
-                                            "example": "UNAUTHENTICATED"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnauthenticatedResponse"
                     }
                 }
             }
@@ -317,7 +303,18 @@
                 "operationId": "4899471515139914da2e5571ce014aac",
                 "parameters": [
                     {
-                        "$ref": "#/components/parameters/ListMyActivitiesFilter"
+                        "name": "filter",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                                "draft",
+                                "upcoming",
+                                "ongoing"
+                            ]
+                        }
                     },
                     {
                         "$ref": "#/components/parameters/PageParameter"
@@ -340,8 +337,10 @@
                                         "data": {
                                             "properties": {
                                                 "activities": {
+                                                    "description": "Paginated resource object.",
                                                     "properties": {
                                                         "data": {
+                                                            "description": "List of resources in current page.",
                                                             "type": "array",
                                                             "items": {
                                                                 "$ref": "#/components/schemas/MyActivityResource"
@@ -363,20 +362,7 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthenticated.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "code": {
-                                            "type": "string",
-                                            "example": "UNAUTHENTICATED"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnauthenticatedResponse"
                     }
                 }
             }
@@ -423,6 +409,125 @@
                         "type": "object"
                     }
                 ]
+            },
+            "ActivityResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "state": {
+                        "type": "string",
+                        "example": "public",
+                        "enum": [
+                            "draft",
+                            "public",
+                            "canceled",
+                            "past"
+                        ]
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Morning Run"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "morning-run"
+                    },
+                    "teaser": {
+                        "type": "string",
+                        "example": "Join us for a morning run!"
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "running",
+                        "enum": [
+                            "athletics",
+                            "running",
+                            "combatSports",
+                            "cycling",
+                            "fitnessConditioning",
+                            "golf",
+                            "hikingTrekking",
+                            "yoga",
+                            "climbing",
+                            "meditationMindfulness",
+                            "nordicWalking",
+                            "swimmingWaterSports",
+                            "racketSports",
+                            "danceMovement",
+                            "teamSports",
+                            "wellnessBalance",
+                            "winterSports",
+                            "hardening"
+                        ]
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "A fun morning run in the park.",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Wenceslas Square, Prague"
+                    },
+                    "lat": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 50.0755
+                    },
+                    "lon": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 14.4378
+                    },
+                    "isSpecial": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "capacity": {
+                        "type": "integer",
+                        "example": 20,
+                        "nullable": true
+                    },
+                    "start": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-06-01T08:00:00+00:00"
+                    },
+                    "end": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-06-01T10:00:00+00:00"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00+00:00"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00+00:00"
+                    },
+                    "registrationsCount": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "attendingGuestsCount": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/UserResource"
+                    }
+                },
+                "type": "object"
             },
             "MyActivityResource": {
                 "properties": {
@@ -528,6 +633,14 @@
                         "type": "string",
                         "format": "date-time",
                         "example": "2024-01-01T00:00:00+00:00"
+                    },
+                    "registrationsCount": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "attendingGuestsCount": {
+                        "type": "integer",
+                        "example": 3
                     }
                 },
                 "type": "object"
@@ -626,6 +739,7 @@
                 "type": "object"
             },
             "PaginationMeta": {
+                "description": "Pagination metadata object.",
                 "properties": {
                     "currentPage": {
                         "type": "integer",
@@ -756,40 +870,161 @@
                 "type": "object"
             }
         },
+        "responses": {
+            "UserWithTokenResponse": {
+                "description": "Created token with user model.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "string",
+                                    "example": "SUCCESS"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "7|GEApizQYN8..."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/MeResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "InvalidContentResponse": {
+                "description": "Invalid content.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "string",
+                                    "example": "INVALID_CONTENT"
+                                },
+                                "data": {
+                                    "properties": {
+                                        "errors": {
+                                            "description": "Map of fields and their validation errors.",
+                                            "type": "object",
+                                            "example": {
+                                                "email": [
+                                                    "Email must be a valid email address."
+                                                ],
+                                                "password": [
+                                                    "Password must have at least 8 characters."
+                                                ]
+                                            },
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "NotFoundResponse": {
+                "description": "Resource Not Found.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "string",
+                                    "example": "NOT_FOUND"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UnauthenticatedResponse": {
+                "description": "Unauthenticated.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "string",
+                                    "example": "UNAUTHENTICATED"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "UnauthorizedResponse": {
+                "description": "Unauthorized.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "string",
+                                    "example": "UNAUTHORIZED"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "parameters": {
             "PageParameter": {
                 "name": "page",
                 "in": "query",
+                "description": "Current page.",
                 "required": false,
                 "schema": {
                     "type": "integer",
+                    "nullable": true,
                     "default": 1,
                     "minimum": 1
-                }
+                },
+                "example": 2
             },
             "PerPageParameter": {
                 "name": "perPage",
                 "in": "query",
+                "description": "Number of items per page.",
                 "required": false,
                 "schema": {
                     "type": "integer",
-                    "default": 10,
+                    "nullable": true,
+                    "default": 20,
+                    "maximum": 200,
                     "minimum": 10
-                }
+                },
+                "example": 20
             },
-            "ListMyActivitiesFilter": {
-                "name": "filter",
+            "SearchParameter": {
+                "name": "search",
                 "in": "query",
+                "description": "Search query string.",
                 "required": false,
                 "schema": {
                     "type": "string",
-                    "nullable": true,
-                    "enum": [
-                        "draft",
-                        "upcoming",
-                        "ongoing"
-                    ]
-                }
+                    "nullable": true
+                },
+                "example": "Thomas Cook"
             }
         },
         "requestBodies": {
@@ -812,11 +1047,38 @@
                                 "password": {
                                     "type": "string",
                                     "format": "password",
-                                    "example": "secret"
+                                    "example": "*********"
                                 },
                                 "deviceName": {
+                                    "description": "Unique device name.",
                                     "type": "string",
                                     "example": "iPhone 15"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "LoginViaSocialRequest": {
+                "required": true,
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "required": [
+                                "accessToken",
+                                "deviceName"
+                            ],
+                            "properties": {
+                                "accessToken": {
+                                    "description": "Access token retrieved directly from a social provider.",
+                                    "type": "string",
+                                    "example": "a7fdas66asdas..."
+                                },
+                                "deviceName": {
+                                    "description": "Unique device name.",
+                                    "type": "string",
+                                    "example": "iPhone 15, iOS 22.0"
                                 }
                             },
                             "type": "object"
@@ -828,16 +1090,16 @@
     },
     "tags": [
         {
-            "name": "Activity",
-            "description": "Activity"
+            "name": "Auth",
+            "description": "Authentication endpoints"
         },
         {
-            "name": "Auth",
-            "description": "Auth"
+            "name": "Activity",
+            "description": "Activity endpoints"
         },
         {
             "name": "User",
-            "description": "User"
+            "description": "User endpoints"
         }
     ]
 }

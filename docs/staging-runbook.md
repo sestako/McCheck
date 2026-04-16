@@ -16,7 +16,7 @@ Use this when MoveConcept exposes **staging** and McCheck switches from mocks to
 - [ ] Test **organizer** account (email + password or agreed auth).
 - [ ] At least one **owned** activity with **registrations** (non-empty guest list).
 - [ ] Backend confirms currently available endpoints in OpenAPI are deployed to staging.
-- [ ] Missing items from [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) are tracked separately (do not block this pass).
+- [ ] Any gaps between live staging and [api-docs.json](./api-docs.json) are tracked as tickets (policy-only items may still live in [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md)).
 
 ## One-time client setup (`mobile/`)
 
@@ -83,3 +83,4 @@ Use this when MoveConcept exposes **staging** and McCheck switches from mocks to
 | 1.0 | 2026-04-09 | Initial runbook |
 | 1.1 | 2026-04-13 | Replaced generic smoke list with endpoint-by-endpoint 20-30 min checklist; aligned with current missing-items handoff doc |
 | 1.2 | 2026-04-14 | Updated auth/logout and my-activities endpoint names to current API contract |
+| 1.3 | 2026-04-16 | Preconditions reference `api-docs.json` vs live staging drift |

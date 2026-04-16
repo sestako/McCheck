@@ -2,6 +2,7 @@
  * Expo exposes env vars prefixed with EXPO_PUBLIC_ at build time.
  * Copy mobile/.env.example to mobile/.env and adjust.
  */
+import { Platform } from 'react-native';
 import { normalizeAuthPath } from './normalizeAuthPaths';
 
 /** No trailing slash. Default matches MoveConcept staging when unset (e.g. local dev without .env). */
@@ -38,6 +39,29 @@ export const AUTH_LOGOUT_PATH = normalizeAuthPath(
   '/api/auth/logout',
   ['/api/logout']
 );
+
+/** `POST` body uses `accessToken` + `deviceName` per OpenAPI `LoginViaSocialRequest`. */
+export const AUTH_GOOGLE_SOCIAL_PATH = normalizeAuthPath(
+  process.env.EXPO_PUBLIC_AUTH_GOOGLE_SOCIAL_PATH,
+  '/api/auth/login/social/google',
+  []
+);
+
+const googleWeb = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() ?? '';
+const googleIos = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() ?? '';
+const googleAndroid = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?.trim() ?? '';
+
+export const GOOGLE_WEB_CLIENT_ID = googleWeb;
+export const GOOGLE_IOS_CLIENT_ID = googleIos;
+export const GOOGLE_ANDROID_CLIENT_ID = googleAndroid;
+
+/** Native Google OAuth via `expo-auth-session` needs platform OAuth client IDs + web client ID (Android / token exchange). */
+export function isGoogleLoginConfigured(): boolean {
+  if (!googleWeb) return false;
+  if (Platform.OS === 'ios') return Boolean(googleIos);
+  if (Platform.OS === 'android') return Boolean(googleAndroid);
+  return Boolean(googleWeb);
+}
 
 /** Optional: when set, wire `@sentry/react-native` in `src/lib/observability.ts`. */
 export const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN?.trim() ?? '';

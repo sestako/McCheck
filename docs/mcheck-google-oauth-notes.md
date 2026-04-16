@@ -1,6 +1,8 @@
-# McCheck — Google sign-in (design notes, pre-backend)
+# McCheck — Google sign-in (design notes)
 
-McCheck must use the **same MoveConcept user** as the web app. Native Google sign-in is **not wired** in the client until backend + product confirm the flow. This document captures a typical shape so implementation stays aligned.
+**Operational setup (Android + EAS + Google Cloud):** see [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md).
+
+McCheck must use the **same MoveConcept user** as the web app. The **MoveConcept contract** for exchanging a Google credential for a Sanctum-style token is documented in **`docs/api-docs.json`**: `POST /auth/login/social/google` with body **`accessToken`** + **`deviceName`** (`LoginViaSocialRequest`). Native Google sign-in in the app remains **to be wired** to that endpoint. This document captures product intent and client flow.
 
 ## Product goals
 
@@ -11,14 +13,15 @@ McCheck must use the **same MoveConcept user** as the web app. Native Google sig
 
 1. User taps **Continue with Google** in the app.
 2. App uses **Google Sign-In** (or `expo-auth-session` + Google OAuth) to obtain an **ID token** (or auth code, depending on strategy).
-3. App **POST**s that credential to a **MoveConcept endpoint** (to be defined), e.g. `/api/auth/google` or Sanctum-compatible route.
+3. App **POST**s to **`/auth/login/social/google`** (under the configured API base) with the **`accessToken`** the backend expects (see OpenAPI — often the provider access token; confirm with backend if an ID token is also accepted).
 4. Server **verifies** the token with Google, resolves/creates the user, returns the **same session/token** shape as email login (`Authorization: Bearer …`).
 5. App stores the token (already handled via `AuthContext` + SecureStore) and loads profile via `EXPO_PUBLIC_AUTH_ME_PATH`.
 
-## What MoveConcept should document (blocking for mobile)
+## What is documented today
 
-- Exact **URL**, **request body** (field names for ID token / code), **response** (token fields per [handoff Appendix A](./moveconcept-backend-handoff.md#appendix-a--mcheck-v1-json-shapes-no-live-endpoint-required)).
-- Error cases: invalid token, email mismatch, account disabled.
+- **URL:** `POST /auth/login/social/{provider}` with `provider = google` (see [api-docs.json](./api-docs.json)).
+- **Body:** `accessToken`, `deviceName`. **Response:** `UserWithTokenResponse` (same shape as email login).
+- **Still confirm with backend:** error codes for invalid token, account linking, and whether the server expects Google’s **access** token vs **ID** token for verification.
 
 ## McCheck code touchpoints (when ready)
 
@@ -30,3 +33,4 @@ McCheck must use the **same MoveConcept user** as the web app. Native Google sig
 | Version | Date | Notes |
 |---------|------|--------|
 | 1.0 | 2026-04-09 | Initial design stub |
+| 1.1 | 2026-04-16 | Point to OpenAPI social login; remove obsolete handoff appendix link |

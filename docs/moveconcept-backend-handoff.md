@@ -1,89 +1,39 @@
-# MoveConcept backend — missing API items for McCheck mobile (V1)
+# MoveConcept API — McCheck coordination (OpenAPI snapshot)
 
-**Audience:** Developer maintaining the **MoveConcept** web application.
+**Audience:** McCheck mobile and anyone integrating with the MoveConcept REST API.
 
-**Purpose:** After reviewing `api-docs.json` (OpenAPI 3.0), these are the **only items missing** from the documented API that McCheck V1 needs. Everything else (login, logout, me, my activities list, registrations) is already documented and sufficient.
+**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API (exported from **staging**, synced 2026-04-16). It is the canonical contract for the routes McCheck V1 targets.
 
-**API base:** `https://moveconcept.cz/api`
-
----
-
-## 1. Single activity detail endpoint (blocking)
-
-**What's missing:** No `GET /activities/{id}` (or equivalent) in the API docs.
-
-**Why McCheck needs it:** The **Event detail** screen loads a single activity by id after the user taps a list row. Without this, we'd have to carry the full payload from the list — fragile and doesn't support deep links.
-
-**Request:** Document (and expose if not yet live) a route like:
-
-```
-GET /activities/{activity}
-```
-
-Returning the same fields as `MyActivityResource` (or richer), wrapped in `{ "code": "SUCCESS", "data": { "activity": { … } } }`.
+**Bases:** See `servers` in the JSON — production `https://moveconcept.cz/api` and staging `https://staging.moveconcept.cz/api`.
 
 ---
 
-## 2. Google sign-in endpoint (blocking)
+## V1-relevant surface (summary)
 
-**What's missing:** Only `POST /auth/login` (email + password + deviceName) is documented. No Google OAuth route.
+| Area | Route / notes |
+|------|----------------|
+| Activity detail | `GET /activities/{activity}` → `data.activity` as **`ActivityResource`** (includes `owner`, `registrationsCount`, `attendingGuestsCount`) |
+| Registrations | `GET /activities/{activity}/registrations` — query: `page`, `perPage`, optional **`search`** |
+| Email login | `POST /auth/login` — `LoginRequest`: `email`, `password`, `deviceName` |
+| Google (social) | `POST /auth/login/social/{provider}` — `provider` enum **`google`**; body **`LoginViaSocialRequest`**: required **`accessToken`**, **`deviceName`**; same success shape as email login (`UserWithTokenResponse`) |
+| Session | `DELETE /auth/logout`, `GET /auth/me` |
+| My activities | `GET /auth/users/me/activities` — optional `filter`: `draft` \| `upcoming` \| `ongoing`; pagination |
+| List rows | **`MyActivityResource`** includes **`registrationsCount`** and **`attendingGuestsCount`** |
 
-**Why McCheck needs it:** Product requires **"same account as web"** including Google sign-in. The mobile app obtains a Google ID token (or auth code) and needs a server endpoint to exchange it for a MoveConcept bearer token.
-
-**Request:** Document a route, e.g.:
-
-```
-POST /auth/google
-```
-
-Body: `{ "idToken": "…", "deviceName": "…" }` (or agreed field names).
-Response: same shape as `/auth/login` — `{ "code": "SUCCESS", "data": { "token": "…", "user": { … } } }`.
-
----
-
-## 3. Search / filter param on registrations (needed for V1)
-
-**What's missing:** `GET /activities/{activity}/registrations` supports `page` and `perPage` but **no `search` query parameter**.
-
-**Why McCheck needs it:** The **Guest list** screen has a search bar for filtering attendees by name. Without server-side search, we'd have to load all pages client-side — impractical for large events.
-
-**Request:** Add an optional query parameter, e.g.:
-
-```
-GET /activities/{activity}/registrations?search=Jordan&page=1&perPage=10
-```
-
-Filtering on guest/user name fields.
+Implementers should read field-level detail in **`api-docs.json`** (`components.schemas`, `components.requestBodies`, `components.responses`).
 
 ---
 
-## 4. `registrationsCount` and `attendingGuestsCount` on `MyActivityResource` (needed for V1)
+## Outside the OpenAPI file
 
-**What's missing:** `MyActivityResource` includes id, uuid, state, name, slug, teaser, category, description, address, lat, lon, isSpecial, capacity, start, end, createdAt, updatedAt — but **not** registration or guest counts.
-
-**Why McCheck needs it:** The **Active events** list and hero show stats like **"142 registrations"** and **"8 guests"** per activity. Without these fields, we'd need a separate call per activity.
-
-**Request:** Add to `MyActivityResource`:
-
-```json
-{
-  "registrationsCount": 142,
-  "attendingGuestsCount": 8
-}
-```
+- **Authorization:** Owner-only access for organizer flows should be verified on staging against product rules (see [mcheck-design-vs-backend.md](./mcheck-design-vs-backend.md)).
+- **Google mobile:** The documented exchange uses **`accessToken`** (token from the social provider as the API expects). Align the native client with that contract; do not assume a separate `POST /auth/google` or `idToken`-only body unless the server is changed and the spec updated.
 
 ---
 
-## Summary
+## Historical note
 
-| # | Item | Priority |
-|---|------|----------|
-| 1 | `GET /activities/{id}` — single activity detail | **Blocking** |
-| 2 | Google sign-in endpoint | **Blocking** |
-| 3 | `search` param on registrations | **Needed for V1** |
-| 4 | `registrationsCount` + `attendingGuestsCount` on `MyActivityResource` | **Needed for V1** |
-
-Everything else in `api-docs.json` (login, logout, me, my activities, registrations structure) is sufficient for McCheck V1.
+Versions **1.0–2.0** of this document listed blocking backend requests before those capabilities appeared in our OpenAPI copy. As of **3.0**, those items are **documented in `api-docs.json`**; this file is retained as a short index and coordination pointer.
 
 ---
 
@@ -91,5 +41,6 @@ Everything else in `api-docs.json` (login, logout, me, my activities, registrati
 
 | Version | Date | Notes |
 |---------|------|--------|
-| 1.0 | 2026-04-08 | Initial handoff from McCheck planning |
-| 2.0 | 2026-04-13 | Rewritten: only items missing from `api-docs.json` (OpenAPI); prior appendices moved to code references in `mobile/src/api/` |
+| 1.0 | 2026-04-08 | Initial handoff — missing API items |
+| 2.0 | 2026-04-13 | Missing-items list tied to OpenAPI only |
+| 3.0 | 2026-04-16 | Coordination doc; OpenAPI synced to MoveConcept staging export |

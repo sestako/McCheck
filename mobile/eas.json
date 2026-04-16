@@ -7,7 +7,17 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "android": { "buildType": "apk" }
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://staging.moveconcept.cz",
+        "EXPO_PUBLIC_USE_MOCK_API": "false",
+        "EXPO_PUBLIC_AUTH_LOGIN_PATH": "/api/auth/login",
+        "EXPO_PUBLIC_AUTH_ME_PATH": "/api/auth/me",
+        "EXPO_PUBLIC_AUTH_LOGOUT_PATH": "/api/auth/logout",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "38760719140-hbk07be4f0orfl3d96n5tktlem68e7d6.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "38760719140-ddf4691ik5ore64ni2pgieh1o676id7f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "38760719140-578hqgob69scjuv69l1eg6lf53atoqao.apps.googleusercontent.com"
+      }
     },
     "preview": {
       "distribution": "internal",
@@ -17,7 +27,10 @@
         "EXPO_PUBLIC_USE_MOCK_API": "false",
         "EXPO_PUBLIC_AUTH_LOGIN_PATH": "/api/auth/login",
         "EXPO_PUBLIC_AUTH_ME_PATH": "/api/auth/me",
-        "EXPO_PUBLIC_AUTH_LOGOUT_PATH": "/api/auth/logout"
+        "EXPO_PUBLIC_AUTH_LOGOUT_PATH": "/api/auth/logout",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "38760719140-hbk07be4f0orfl3d96n5tktlem68e7d6.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "38760719140-ddf4691ik5ore64ni2pgieh1o676id7f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "38760719140-578hqgob69scjuv69l1eg6lf53atoqao.apps.googleusercontent.com"
       }
     },
     "production": {
@@ -27,7 +40,10 @@
         "EXPO_PUBLIC_USE_MOCK_API": "false",
         "EXPO_PUBLIC_AUTH_LOGIN_PATH": "/api/auth/login",
         "EXPO_PUBLIC_AUTH_ME_PATH": "/api/auth/me",
-        "EXPO_PUBLIC_AUTH_LOGOUT_PATH": "/api/auth/logout"
+        "EXPO_PUBLIC_AUTH_LOGOUT_PATH": "/api/auth/logout",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "38760719140-hbk07be4f0orfl3d96n5tktlem68e7d6.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "38760719140-ddf4691ik5ore64ni2pgieh1o676id7f.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "38760719140-578hqgob69scjuv69l1eg6lf53atoqao.apps.googleusercontent.com"
       }
     }
   },

@@ -10,7 +10,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { API_BASE_URL, AUTH_LOGIN_PATH, USE_MOCK_API } from '../config/env';
+import { GoogleSignInButton } from '../auth/GoogleSignInButton';
+import {
+  API_BASE_URL,
+  AUTH_GOOGLE_SOCIAL_PATH,
+  AUTH_LOGIN_PATH,
+  isGoogleLoginConfigured,
+  USE_MOCK_API,
+} from '../config/env';
 import { useAuth } from '../context/AuthContext';
 import { userFriendlyApiMessage } from '../lib/apiErrors';
 import type { RootStackParamList } from '../navigation/types';
@@ -19,7 +26,7 @@ import { colors, radius, space, type } from '../theme/tokens';
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export function LoginScreen(_props: Props) {
-  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { signInWithEmail, signInWithGoogle, exchangeGoogleAccessToken } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -99,21 +106,46 @@ export function LoginScreen(_props: Props) {
           <Text style={styles.primaryBtnText}>{busy ? 'Signing in...' : 'Continue with email'}</Text>
         </Pressable>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Continue with Google"
-          style={({ pressed }) => [styles.secondaryBtn, pressed && styles.pressed]}
-          disabled={busy}
-          onPress={async () => {
-            try {
-              await signInWithGoogle();
-            } catch (e) {
-              Alert.alert('Google sign in', prettyError(e));
+        {USE_MOCK_API ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Continue with Google"
+            style={({ pressed }) => [styles.secondaryBtn, pressed && styles.pressed]}
+            disabled={busy}
+            onPress={async () => {
+              try {
+                await signInWithGoogle();
+              } catch (e) {
+                Alert.alert('Google sign in', prettyError(e));
+              }
+            }}
+          >
+            <Text style={styles.secondaryBtnText}>Continue with Google</Text>
+          </Pressable>
+        ) : isGoogleLoginConfigured() ? (
+          <GoogleSignInButton
+            disabled={busy}
+            exchangeGoogleAccessToken={exchangeGoogleAccessToken}
+            onError={(msg) =>
+              Alert.alert('Google sign in', `${msg}\n\nEndpoint: ${API_BASE_URL}${AUTH_GOOGLE_SOCIAL_PATH}`)
             }
-          }}
-        >
-          <Text style={styles.secondaryBtnText}>Continue with Google</Text>
-        </Pressable>
+          />
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Continue with Google"
+            style={({ pressed }) => [styles.secondaryBtn, pressed && styles.pressed]}
+            disabled={busy}
+            onPress={() =>
+              Alert.alert(
+                'Google sign-in',
+                'Add OAuth client IDs to mobile/.env (see .env.example): EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID plus the iOS or Android client ID for this platform. For Expo Go, add the Expo auth redirect URL in Google Cloud Console.'
+              )
+            }
+          >
+            <Text style={styles.secondaryBtnText}>Continue with Google</Text>
+          </Pressable>
+        )}
       </View>
     </KeyboardAvoidingView>
   );

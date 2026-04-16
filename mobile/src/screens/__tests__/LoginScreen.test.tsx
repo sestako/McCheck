@@ -15,6 +15,7 @@ jest.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
     signInWithEmail: mockSignInWithEmail,
     signInWithGoogle: mockSignInWithGoogle,
+    exchangeGoogleAccessToken: jest.fn(),
   }),
 }));
 
