@@ -15,7 +15,7 @@ export function normalizeAuthPath(
     if (__DEV__) {
       // eslint-disable-next-line no-console
       console.warn(
-        `[McCheck] Auth path "${withLeading}" is invalid for MoveConcept; using "${defaultPath}". Fix EXPO_PUBLIC_* in .env or EAS.`
+        `[McCheck] Path "${withLeading}" is invalid for MoveConcept; using "${defaultPath}". Fix EXPO_PUBLIC_* in .env or EAS.`
       );
     }
     return defaultPath;

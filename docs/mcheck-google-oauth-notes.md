@@ -1,32 +1,24 @@
-# McCheck — Google sign-in (design notes)
+# McCheck — Google sign-in
 
-**Operational setup (Android + EAS + Google Cloud):** see [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md).
+**Android + EAS + Google Cloud setup:** [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md).
 
-McCheck must use the **same MoveConcept user** as the web app. The **MoveConcept contract** for exchanging a Google credential for a Sanctum-style token is documented in **`docs/api-docs.json`**: `POST /auth/login/social/google` with body **`accessToken`** + **`deviceName`** (`LoginViaSocialRequest`). Native Google sign-in in the app remains **to be wired** to that endpoint. This document captures product intent and client flow.
+McCheck uses the **same MoveConcept user** as the web app. The server contract is in **`docs/api-docs.json`**: `POST /auth/login/social/{provider}` with `provider = google`, body **`accessToken`** + **`deviceName`** (`LoginViaSocialRequest`), response same as email login (`UserWithTokenResponse`).
+
+## Implementation (mobile)
+
+- **`mobile/src/auth/GoogleSignInButton.tsx`** — `expo-auth-session` `Google.useAuthRequest`; waits for the hook **response** (after OAuth code exchange) before reading tokens, then calls `exchangeGoogleAccessToken`.
+- **`mobile/src/context/AuthContext.tsx`** — `exchangeGoogleAccessToken` posts to `${API_BASE_URL}${AUTH_GOOGLE_SOCIAL_PATH}` (default `/api/auth/login/social/google`), stores Sanctum token, loads profile via `EXPO_PUBLIC_AUTH_ME_PATH`.
+- **Env:** `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` (see `mobile/.env.example` and `mobile/eas.json` for TestFlight/EAS builds).
+- **Expo Go / dev:** Web OAuth client needs redirect URI `https://auth.expo.io/@ondrejsestak/mccheck` (match `app.json` owner + slug if your Expo account differs).
 
 ## Product goals
 
 - One **Google identity** → one **`users` row** (same as web Google login).
 - No separate “app-only” accounts.
 
-## Typical native flow (high level)
+## Backend alignment
 
-1. User taps **Continue with Google** in the app.
-2. App uses **Google Sign-In** (or `expo-auth-session` + Google OAuth) to obtain an **ID token** (or auth code, depending on strategy).
-3. App **POST**s to **`/auth/login/social/google`** (under the configured API base) with the **`accessToken`** the backend expects (see OpenAPI — often the provider access token; confirm with backend if an ID token is also accepted).
-4. Server **verifies** the token with Google, resolves/creates the user, returns the **same session/token** shape as email login (`Authorization: Bearer …`).
-5. App stores the token (already handled via `AuthContext` + SecureStore) and loads profile via `EXPO_PUBLIC_AUTH_ME_PATH`.
-
-## What is documented today
-
-- **URL:** `POST /auth/login/social/{provider}` with `provider = google` (see [api-docs.json](./api-docs.json)).
-- **Body:** `accessToken`, `deviceName`. **Response:** `UserWithTokenResponse` (same shape as email login).
-- **Still confirm with backend:** error codes for invalid token, account linking, and whether the server expects Google’s **access** token vs **ID** token for verification.
-
-## McCheck code touchpoints (when ready)
-
-- `AuthContext.signInWithGoogle` — replace `throw new Error('Google login not wired…')` with the exchange + token storage path used for email login.
-- Optional: `EXPO_PUBLIC_AUTH_GOOGLE_PATH` if the route is configurable.
+Confirm with MoveConcept whether `accessToken` must be Google’s **OAuth access token**, **ID token**, or either — the app prefers `authentication.accessToken` from the token response and falls back to `id_token` in params when needed.
 
 ## Document control
 
@@ -34,3 +26,4 @@ McCheck must use the **same MoveConcept user** as the web app. The **MoveConcept
 |---------|------|--------|
 | 1.0 | 2026-04-09 | Initial design stub |
 | 1.1 | 2026-04-16 | Point to OpenAPI social login; remove obsolete handoff appendix link |
+| 1.2 | 2026-04-16 | Document implemented flow (`GoogleSignInButton`, `AuthContext`); TestFlight verified |

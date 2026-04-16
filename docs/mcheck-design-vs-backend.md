@@ -21,7 +21,7 @@
 |------|-------------|----------------|
 | **Visual design** (Forest Minimalist / tokens) | Fully implementable in the client | Not required |
 | **Auth** | Login UI + token storage | **Available in OpenAPI:** `POST /api/auth/login`, `GET /api/auth/me`, `DELETE /api/auth/logout` (staging parity validation in progress) |
-| **Event discovery / “my events”** | Lists, navigation | **Available in OpenAPI:** `GET /api/auth/users/me/activities` (owner-scoped list) |
+| **Event discovery / “my events”** | Lists, navigation | **Available in OpenAPI:** `GET /api/users/me/activities` (owner-scoped list) |
 | **Guest list** | List + search UI | **Available in OpenAPI:** `GET /api/activities/{activity}/registrations` (guest/user polymorphic rows; check-in still out of scope) |
 | **Scanner / check-in** | Camera + UX | **Missing:** no validate/mark-checked-in API; **no check-in fields** on `activity_registrations` |
 | **History / audit** | Timeline UI | **Missing** |
@@ -170,7 +170,7 @@ Use this as a living checklist (copy into Issues/Projects as needed).
 
 ### 6.3 Events list (“Event hub” / “Upcoming”)
 
-- [ ] API: **list my activities** where **owner = current user** (upcoming/past) via `/api/auth/users/me/activities`
+- [ ] API: **list my activities** where **owner = current user** (upcoming/past) via `/api/users/me/activities`
 - [ ] Pagination, filters (state, date range)
 - [ ] Co-worker flow: **skip** global hub or show **single event** from invite scope only
 
@@ -245,5 +245,6 @@ Use this as a living checklist (copy into Issues/Projects as needed).
 | 1.0 | 2026-04-08 | Initial mapping from MoveConcept codebase review + Stitch MCP summary |
 | 1.1 | 2026-04-08 | Co-workers: Wix-style email invite, no web account; §3.1, summary, phases, checklist, open questions |
 | 1.2 | 2026-04-09 | Added build status after mobile UI implementation and QA validation |
-| 1.3 | 2026-04-14 | Refreshed API status/endpoint references to current OpenAPI contract (`/api/auth/*`, `/api/auth/users/me/activities`, registrations) |
+| 1.3 | 2026-04-14 | Refreshed API status/endpoint references to current OpenAPI contract (`/api/auth/*`, `/api/users/me/activities`, registrations) |
+| 1.4 | 2026-04-16 | Corrected my-activities path: `/api/users/me/activities` (not under `/api/auth/users/…`) |
 | 1.4 | 2026-04-14 | Removed stale web-login/attendees assumptions; clarified staging parity and registrations wording |

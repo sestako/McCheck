@@ -6,6 +6,7 @@ import {
   AUTH_LOGIN_PATH,
   AUTH_LOGOUT_PATH,
   AUTH_ME_PATH,
+  MY_ACTIVITIES_LIST_PATH,
   USE_MOCK_API,
 } from '../config/env';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +15,18 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
+
+function formatProfileInstant(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 export function ProfileScreen(_props: Props) {
   const { user, token, signOut } = useAuth();
@@ -30,6 +43,22 @@ export function ProfileScreen(_props: Props) {
         <Text style={styles.label}>Signed in as</Text>
         <Text style={styles.name}>{user?.displayName ?? '—'}</Text>
         <Text style={styles.email}>{user?.email ?? ''}</Text>
+        {user?.id != null ? <DetailRow label="User ID" value={String(user.id)} mono /> : null}
+        {user?.username ? <DetailRow label="Username" value={user.username} mono /> : null}
+        {user?.fullName ? <DetailRow label="Full name" value={user.fullName} /> : null}
+        {(user?.firstName || user?.lastName) && !user?.fullName ? (
+          <DetailRow label="Name" value={[user?.firstName, user?.lastName].filter(Boolean).join(' ')} />
+        ) : null}
+        {user?.phone ? <DetailRow label="Phone" value={user.phone} /> : null}
+        {user?.bio ? <DetailRow label="Bio" value={user.bio} multiline /> : null}
+        {user?.profilePhotoUrl ? (
+          <DetailRow label="Profile photo" value={user.profilePhotoUrl} mono multiline />
+        ) : null}
+        {user?.createdAt ? <DetailRow label="Member since" value={formatProfileInstant(user.createdAt)} /> : null}
+        {user?.updatedAt ? <DetailRow label="Profile updated" value={formatProfileInstant(user.updatedAt)} /> : null}
+        {user?.hasGoogleAuth != null ? (
+          <DetailRow label="Google linked" value={user.hasGoogleAuth ? 'Yes' : 'No'} />
+        ) : null}
       </View>
       <View style={styles.card}>
         <Text style={styles.label}>Integration readiness</Text>
@@ -38,6 +67,7 @@ export function ProfileScreen(_props: Props) {
         <DetailRow label="Login path" value={AUTH_LOGIN_PATH} />
         <DetailRow label="Me path" value={AUTH_ME_PATH} />
         <DetailRow label="Logout path" value={AUTH_LOGOUT_PATH} />
+        <DetailRow label="My activities list path" value={MY_ACTIVITIES_LIST_PATH} />
         <DetailRow label="Token in session" value={token ? 'Yes' : 'No'} />
         {!USE_MOCK_API ? (
           <Text style={styles.liveHint}>{liveApiTroubleshootingHint()}</Text>
@@ -95,6 +125,8 @@ const styles = StyleSheet.create({
   },
   name: { fontSize: type.titleSm, fontWeight: '700', color: colors.onSurface, marginTop: space.xs },
   email: { fontSize: type.bodyMd, color: colors.onSurfaceVariant, marginTop: space.xs },
+  detailMono: { fontFamily: 'Courier', fontSize: type.labelSm },
+  detailMultiline: { marginTop: space.xxs, lineHeight: 22 },
   signOut: {
     backgroundColor: colors.surfaceContainerLow,
     borderWidth: 1,
@@ -115,11 +147,27 @@ const styles = StyleSheet.create({
   },
 });
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({
+  label,
+  value,
+  mono,
+  multiline,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  multiline?: boolean;
+}) {
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
+      <Text
+        style={[styles.detailValue, mono && styles.detailMono, multiline && styles.detailMultiline]}
+        numberOfLines={multiline ? undefined : 4}
+        ellipsizeMode="tail"
+      >
+        {value}
+      </Text>
     </View>
   );
 }

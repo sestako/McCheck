@@ -99,7 +99,7 @@ export function ActiveEventsScreen({ navigation }: Props) {
         <Text accessibilityRole="header" style={styles.heroTitle}>
           Active events
         </Text>
-        <Text style={styles.heroSubtitle}>Upcoming or ongoing events you own.</Text>
+        <Text style={styles.heroSubtitle}>Draft, upcoming, or ongoing events you own.</Text>
         <View style={styles.heroStatsRow}>
           <View style={styles.statPill}>
             <Text style={styles.statValue}>{items.length}</Text>
@@ -137,7 +137,7 @@ export function ActiveEventsScreen({ navigation }: Props) {
         }
         contentContainerStyle={items.length === 0 ? styles.emptyContainer : styles.listContent}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No upcoming or ongoing events you own.</Text>
+          <Text style={styles.emptyText}>No draft, upcoming, or ongoing events you own.</Text>
         }
         renderItem={({ item }) => (
           <Pressable

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../../config/env';
+import { API_BASE_URL, MY_ACTIVITIES_LIST_PATH } from '../../config/env';
 import type { ActivitiesApi, Activity, AttendeeRow, PaginatedAttendees } from '../types';
 import { ApiError } from '../types';
 import { extractActivitiesList } from './extractActivitiesList';
@@ -37,23 +37,71 @@ async function parseJson(res: Response): Promise<unknown> {
   }
 }
 
-/** Uses documented MoveConcept endpoint for organizer activities. */
+/**
+ * MoveConcept `GET /api/users/me/activities` (see `MY_ACTIVITIES_LIST_PATH` / `docs/api-docs.json`) supports optional `filter`:
+ * `draft` | `upcoming` | `ongoing`. Staging may return an empty list when `filter` is omitted.
+ * We load **draft**, **upcoming**, and **ongoing** (organizer test events are often still draft),
+ * merge by id, then fall back to an unfiltered request if every bucket is empty.
+ */
 async function fetchMyActivities(getToken: TokenGetter): Promise<Activity[]> {
   const headers = await authHeaders(getToken);
-  const url = `${API_BASE_URL}/api/auth/users/me/activities`;
-  const res = await fetch(url, { headers });
-  const body = (await parseJson(res)) as Record<string, unknown> | null;
-  if (!res.ok) {
+  const base = `${API_BASE_URL}${MY_ACTIVITIES_LIST_PATH}`;
+
+  const mergeInto = (byId: Map<number, Activity>, body: Record<string, unknown> | null) => {
+    const list = extractActivitiesList(body);
+    if (!Array.isArray(list)) return;
+    for (const raw of list) {
+      try {
+        const a = mapActivity(raw);
+        if (Number.isFinite(a.id) && a.id > 0) byId.set(a.id, a);
+      } catch {
+        /* skip malformed row */
+      }
+    }
+  };
+
+  async function fetchPage(
+    filter?: 'draft' | 'upcoming' | 'ongoing'
+  ): Promise<{ ok: boolean; status: number; body: Record<string, unknown> | null }> {
+    const q = new URLSearchParams({ page: '1', perPage: '100' });
+    if (filter) q.set('filter', filter);
+    const res = await fetch(`${base}?${q}`, { headers });
+    const body = (await parseJson(res)) as Record<string, unknown> | null;
+    return { ok: res.ok, status: res.status, body };
+  }
+
+  const byId = new Map<number, Activity>();
+  const [dr, up, on] = await Promise.all([
+    fetchPage('draft'),
+    fetchPage('upcoming'),
+    fetchPage('ongoing'),
+  ]);
+
+  if (!dr.ok && !up.ok && !on.ok) {
+    const first = dr.body ?? up.body ?? on.body;
     throw new ApiError(
-      typeof body?.message === 'string' ? body.message : res.statusText,
-      res.status
+      typeof first?.message === 'string' ? first.message : 'Could not load events',
+      dr.status
     );
   }
-  const list = extractActivitiesList(body);
-  if (!Array.isArray(list)) {
-    return [];
+  if (dr.ok) mergeInto(byId, dr.body);
+  if (up.ok) mergeInto(byId, up.body);
+  if (on.ok) mergeInto(byId, on.body);
+
+  if (byId.size === 0) {
+    const plain = await fetchPage();
+    if (!plain.ok) {
+      throw new ApiError(
+        typeof plain.body?.message === 'string' ? plain.body.message : 'Could not load events',
+        plain.status
+      );
+    }
+    mergeInto(byId, plain.body);
   }
-  return list.map((x) => mapActivity(x));
+
+  return Array.from(byId.values()).sort(
+    (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+  );
 }
 
 async function fetchActivity(getToken: TokenGetter, id: number): Promise<Activity> {

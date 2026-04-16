@@ -14,6 +14,14 @@ function makeActivity(overrides: Partial<Activity> = {}): Activity {
     registrationsCount: 0,
     attendingGuestsCount: 0,
     owner: { id: 1, displayName: 'Owner' },
+    address: null,
+    lat: null,
+    lon: null,
+    category: null,
+    slug: null,
+    isSpecial: false,
+    createdAt: null,
+    updatedAt: null,
     ...overrides,
   };
 }

@@ -2,7 +2,7 @@
 
 **Audience:** McCheck mobile and anyone integrating with the MoveConcept REST API.
 
-**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API (exported from **staging**, synced 2026-04-16). It is the canonical contract for the routes McCheck V1 targets.
+**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API (exported from **staging**, synced 2026-04-16). It is the canonical contract for the routes McCheck V1 targets. **McCheck iOS** exercises this contract on staging and TestFlight (email + Google social login verified as of 2026-04-16).
 
 **Bases:** See `servers` in the JSON — production `https://moveconcept.cz/api` and staging `https://staging.moveconcept.cz/api`.
 
@@ -17,7 +17,7 @@
 | Email login | `POST /auth/login` — `LoginRequest`: `email`, `password`, `deviceName` |
 | Google (social) | `POST /auth/login/social/{provider}` — `provider` enum **`google`**; body **`LoginViaSocialRequest`**: required **`accessToken`**, **`deviceName`**; same success shape as email login (`UserWithTokenResponse`) |
 | Session | `DELETE /auth/logout`, `GET /auth/me` |
-| My activities | `GET /auth/users/me/activities` — optional `filter`: `draft` \| `upcoming` \| `ongoing`; pagination |
+| My activities | `GET /users/me/activities` — optional `filter`: `draft` \| `upcoming` \| `ongoing`; pagination |
 | List rows | **`MyActivityResource`** includes **`registrationsCount`** and **`attendingGuestsCount`** |
 
 Implementers should read field-level detail in **`api-docs.json`** (`components.schemas`, `components.requestBodies`, `components.responses`).
@@ -44,3 +44,4 @@ Versions **1.0–2.0** of this document listed blocking backend requests before 
 | 1.0 | 2026-04-08 | Initial handoff — missing API items |
 | 2.0 | 2026-04-13 | Missing-items list tied to OpenAPI only |
 | 3.0 | 2026-04-16 | Coordination doc; OpenAPI synced to MoveConcept staging export |
+| 3.1 | 2026-04-16 | Note: mobile staging + TestFlight auth (email + Google) verified against live API |

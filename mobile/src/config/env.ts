@@ -47,6 +47,16 @@ export const AUTH_GOOGLE_SOCIAL_PATH = normalizeAuthPath(
   []
 );
 
+/**
+ * Owner-scoped activities list. MoveConcept serves this under `/api/users/...`, not `/api/auth/users/...`
+ * (the latter 404s on staging and production).
+ */
+export const MY_ACTIVITIES_LIST_PATH = normalizeAuthPath(
+  process.env.EXPO_PUBLIC_MY_ACTIVITIES_LIST_PATH,
+  '/api/users/me/activities',
+  ['/api/auth/users/me/activities']
+);
+
 const googleWeb = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim() ?? '';
 const googleIos = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID?.trim() ?? '';
 const googleAndroid = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID?.trim() ?? '';

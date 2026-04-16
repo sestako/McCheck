@@ -13,6 +13,7 @@ import {
 import type { AttendeeRow } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { userFriendlyApiMessage } from '../lib/apiErrors';
+import { reportError } from '../lib/observability';
 import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, space, type } from '../theme/tokens';
 
@@ -30,6 +31,7 @@ export function GuestListScreen({ route, navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appendError, setAppendError] = useState<string | null>(null);
 
   const blockedCount = useMemo(
     () => items.reduce((sum, i) => sum + (i.isBlocked ? 1 : 0), 0),
@@ -47,6 +49,7 @@ export function GuestListScreen({ route, navigation }: Props) {
 
   const resetAndLoad = useCallback(async () => {
     setError(null);
+    setAppendError(null);
     setLoading(true);
     setPage(1);
     setItems([]);
@@ -79,14 +82,17 @@ export function GuestListScreen({ route, navigation }: Props) {
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore || loading) return;
     setLoadingMore(true);
+    setAppendError(null);
     const next = page + 1;
     try {
       const res = await activitiesApi.getAttendees(activityId, next, debounced.trim() || null);
       setItems((prev) => [...prev, ...res.items]);
       setHasMore(res.hasMore);
       setPage(next);
-    } catch {
-      // Keep current list and footer state quiet on paging errors.
+    } catch (e) {
+      const msg = userFriendlyApiMessage(e);
+      reportError('Guest list pagination failed', e, { activityId, page: next });
+      setAppendError(msg);
     } finally {
       setLoadingMore(false);
     }
@@ -105,11 +111,15 @@ export function GuestListScreen({ route, navigation }: Props) {
         />
         <View style={styles.counterRow}>
           <Text style={styles.counterText}>{items.length} guests loaded</Text>
-          {blockedCount > 0 ? <Text style={styles.counterWarn}>{blockedCount} blocked guests</Text> : null}
+          {blockedCount > 0 ? (
+            <Text style={styles.counterWarn} accessibilityLabel={`${blockedCount} blocked guests`}>
+              {blockedCount} blocked
+            </Text>
+          ) : null}
         </View>
       </View>
 
-      {error ? (
+      {error && items.length > 0 ? (
         <View style={styles.errorBanner}>
           <Text style={styles.error}>{error}</Text>
           <Pressable
@@ -122,7 +132,19 @@ export function GuestListScreen({ route, navigation }: Props) {
         </View>
       ) : null}
 
-      {loading && items.length === 0 ? (
+      {error && items.length === 0 && !loading ? (
+        <View style={styles.centered}>
+          <Text style={styles.empty}>{error}</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading guests"
+            style={({ pressed }) => [styles.retryCta, pressed && { opacity: 0.9 }]}
+            onPress={() => void resetAndLoad()}
+          >
+            <Text style={styles.retryCtaText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : loading && items.length === 0 ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.primaryContainer} />
         </View>
@@ -141,7 +163,13 @@ export function GuestListScreen({ route, navigation }: Props) {
           onEndReachedThreshold={0.4}
           onEndReached={() => void loadMore()}
           contentContainerStyle={items.length === 0 ? styles.emptyContainer : styles.listContent}
-          ListEmptyComponent={<Text style={styles.empty}>No guests match this search.</Text>}
+          ListEmptyComponent={
+            <Text style={styles.empty}>
+              {debounced.trim()
+                ? 'No guests match this search.'
+                : 'No registered guests yet. Pull down to refresh.'}
+            </Text>
+          }
           renderItem={({ item }) => (
             <View style={styles.row}>
               <View style={styles.avatar}>
@@ -153,11 +181,29 @@ export function GuestListScreen({ route, navigation }: Props) {
                 </Text>
                 <Text style={styles.subline}>Guest</Text>
               </View>
-              {item.isBlocked ? <Text style={styles.blocked}>Blocked</Text> : null}
+              {item.isBlocked ? (
+                <Text style={styles.blocked} accessibilityRole="text" accessibilityLabel="Blocked guest">
+                  Blocked
+                </Text>
+              ) : null}
             </View>
           )}
           ListFooterComponent={
-            loadingMore ? <ActivityIndicator style={{ margin: 16 }} color={colors.primaryContainer} /> : null
+            <>
+              {appendError ? (
+                <View style={styles.appendErrorWrap}>
+                  <Text style={styles.appendError}>{appendError}</Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Retry loading more guests"
+                    onPress={() => void loadMore()}
+                  >
+                    <Text style={styles.errorRetry}>Try again</Text>
+                  </Pressable>
+                </View>
+              ) : null}
+              {loadingMore ? <ActivityIndicator style={{ margin: 16 }} color={colors.primaryContainer} /> : null}
+            </>
           }
         />
       )}
@@ -242,4 +288,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: type.labelSm,
   },
+  retryCta: {
+    marginTop: space.md,
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingHorizontal: space.xl,
+    paddingVertical: space.sm,
+  },
+  retryCtaText: { color: colors.onPrimary, fontWeight: '600' },
+  appendErrorWrap: {
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    alignItems: 'center',
+    gap: space.xs,
+  },
+  appendError: { color: colors.error, fontSize: type.bodyMd, textAlign: 'center' },
 });

@@ -1,30 +1,27 @@
 # McCheck — implementation plan
 
-## Current status snapshot (2026-04-09)
+## Current status snapshot (2026-04-16)
 
 **Completed in mobile (`mobile/`):**
 
-- Expo + TypeScript app scaffolded and running in iOS simulator.
-- Core V1 screens implemented: **Login**, **Active events**, **Event detail**, **Guest list**, **Profile**.
-- API layer split into **mock** and **real** clients behind a shared interface (`createActivitiesApi`).
-- Auth context + secure token storage plumbing in place (mock sign-in active by default).
-- Stitch-inspired visual pass completed:
-  - Forest Minimalist theme tokens (colors, spacing, radius, type)
-  - screen-by-screen spacing/typography polish
-  - copy consistency pass (registrations/guests wording, date formatting)
-- QA pass completed manually on simulator:
-  - UI and navigation validated end-to-end
-  - no blocker-level runtime errors observed
-  - only expected iOS simulator / debug noise in logs
-- **Client hardening (no backend):** optional mock **failure/edge** scenarios via `EXPO_PUBLIC_MOCK_SCENARIO` (see [mcheck-phase-a.md](./mcheck-phase-a.md)); **Retry** on event detail + guest list errors; mapper unit tests; long-title layout clamps.
-- **CI & quality:** GitHub Actions runs `npm run typecheck` + `npm test` on `mobile/` changes; `LoginScreen` RTL smoke test; `initObservability` placeholder for Sentry.
-- **Docs (pre-staging):** [staging-runbook.md](./staging-runbook.md), [mcheck-google-oauth-notes.md](./mcheck-google-oauth-notes.md), [mcheck-store-release-checklist.md](./mcheck-store-release-checklist.md); **EAS** config in `mobile/eas.json`.
+- Expo + TypeScript app; core V1 screens: **Login** (email + **Google**), **Active events**, **Event detail**, **Guest list**, **Profile**.
+- API layer: **mock** and **real** clients behind `createActivitiesApi`; contract aligned with **`docs/api-docs.json`** (staging OpenAPI snapshot).
+- **Auth:** `AuthContext` — email `POST /api/auth/login`; Google via `GoogleSignInButton` + `expo-auth-session`, then `POST /api/auth/login/social/google` with `accessToken` + `deviceName`; token in SecureStore; `/api/auth/me` for profile; logout `DELETE /api/auth/logout`.
+- **Google / TestFlight:** OAuth flow waits for hook **response** after code exchange (fixes empty token on device builds). iOS **EAS production** builds submitted to TestFlight; env for staging API + Google client IDs in `mobile/eas.json` profiles.
+- Stitch-inspired UI tokens and polish; **Retry** on event detail + guest list errors; mapper unit tests.
+- **CI:** GitHub Actions — `npm run typecheck` + `npm test` on `mobile/`; `initObservability` placeholder for Sentry.
+- **Staging (real data):** An activity **created on MoveConcept staging** by the signed-in organizer **appears in Active events** in the app (same account as web) — validated 2026-04-16.
 
-**Still pending (backend-dependent):**
+### Active track: Phase A (mock-first quality)
 
-- Staging parity validation for auth contract (email + `deviceName`; **Google** is mock-only in app until `POST /auth/login/social/google` is wired — live `signInWithGoogle` throws)
-- Production authorization hardening for organizer-only access to registrations data
-- Mobile wiring to match **`docs/api-docs.json`** where not yet implemented (`search` on registrations, list counters, social login body fields)
+**Do this first** before the next feature spike or wide TestFlight rollout: follow **[mcheck-phase-a.md](./mcheck-phase-a.md)** end-to-end — default **mock API** dev, **~5 min manual QA**, optional **`EXPO_PUBLIC_MOCK_SCENARIO`** matrix (one scenario at a time), keep **`npm test` / `npm run typecheck`** green. Phase A is UI/UX and client robustness **without** staging dependency.
+
+**Still pending / next validation (after or parallel to Phase A):**
+
+- Full **staging smoke** per [staging-runbook.md](./staging-runbook.md) on every release (detail, registrations **search**, owner **403** cases — **activities list** already validated with web-created event).
+- **Backend / product:** confirm **owner-only** registrations access in production; resolve any drift between live staging and `api-docs.json`.
+- **Android:** same Google OAuth + EAS path when you cut an Android build (SHA-1 / package — see [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md)).
+- **V2 (later):** scanner / check-in — see **Below the line — V2** in this doc; do not start until Phase 2 kickoff steps **1–8** are green on staging (rule in Phase 2 section).
 
 ## V1 — organizer app at the door (read-focused)
 
@@ -48,7 +45,7 @@
 **Backend prerequisites for V1 (MoveConcept):**
 
 - **New:** `GET` (or equivalent) **`activities I own`** with filters for **upcoming + ongoing**, pagination, fields needed for list rows.
-- **Auth for mobile:** Token (or agreed) flow for **email**; **Google** OAuth → same user as web; document request/response/errors.
+- **Auth for mobile:** Token flow for **email** + **Google** social login → same user as web (mobile implemented; keep OpenAPI + staging in sync).
 - **Harden:** **Registrations** endpoint authorized **only** for **activity owner** (replace or narrow current `ActivityPolicy::show`-style access for this route in production).
 
 **Explicitly out of V1:**
@@ -85,7 +82,7 @@ Do this **once** staging (or prod) matches the contract in **`docs/api-docs.json
 | Step | Action |
 |------|--------|
 | 1 | Set `EXPO_PUBLIC_API_BASE_URL` to **staging**; set `EXPO_PUBLIC_USE_MOCK_API=false`. |
-| 2 | **Auth:** Wire email + Google flows to real endpoints; store token securely; verify `Authorization` on a smoke request. |
+| 2 | **Auth:** Email + Google flows to real endpoints (done); store token securely; verify `Authorization` on a smoke request after each release. |
 | 3 | **My activities:** Replace mock `getMyActivities()` with real `GET` (owner, upcoming/ongoing); fix list mapping if field names differ from mocks. |
 | 4 | **Activity detail:** Confirm `GET /api/activities/{id}` matches types; handle 403/404. |
 | 5 | **Guest list:** Wire registrations route; confirm **only owner** can load (retest with non-owner token — expect 403). |
@@ -104,7 +101,7 @@ Use this as the first working sequence once staging API pieces are delivered.
 |------|-------|------|-----------|
 | 1 | MoveConcept | Confirm staging URLs + test organizer credentials + sample owned activity with registrations | Mobile can authenticate and load non-empty test data |
 | 2 | McCheck | Switch env to staging (`EXPO_PUBLIC_API_BASE_URL`) and disable mocks (`EXPO_PUBLIC_USE_MOCK_API=false`) | App boots against real backend without mock fallback |
-| 3 | McCheck | Wire organizer auth end-to-end (email + **Google** via `POST /auth/login/social/google` per OpenAPI when implemented in app), persist token, logout via `EXPO_PUBLIC_AUTH_LOGOUT_PATH` if provided | Login survives app restart and authorized calls succeed |
+| 3 | McCheck | Organizer auth end-to-end (**email** + **Google** via `/api/auth/login/social/google`), persist token, logout | Verified on simulator + **TestFlight**; login survives app restart |
 | 4 | McCheck | Integrate owner-scoped activities list API and map payload to list cards | Active events screen shows only owned upcoming/ongoing events |
 | 5 | McCheck | Integrate event detail with 403/404 handling and user-facing fallback states | Detail screen works for owned events and fails safely otherwise |
 | 6 | McCheck + MoveConcept | Integrate registrations with owner-only authorization verification | Owner loads registrations; non-owner test gets 403 |
@@ -172,7 +169,7 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 - [mcheck-design-vs-backend.md](./mcheck-design-vs-backend.md) — Stitch vs API gaps, co-worker model, checklist.
 - [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) — OpenAPI snapshot index + coordination (policy, drift).
 - [staging-runbook.md](./staging-runbook.md) — first staging integration steps and smoke test.
-- [mcheck-google-oauth-notes.md](./mcheck-google-oauth-notes.md) — Google sign-in notes (contract: **`api-docs.json`** `LoginViaSocialRequest`).
+- [mcheck-google-oauth-notes.md](./mcheck-google-oauth-notes.md) — Google sign-in (implemented; contract in **`api-docs.json`** `LoginViaSocialRequest`).
 - [mcheck-store-release-checklist.md](./mcheck-store-release-checklist.md) — store / EAS / assets checklist.
 
 ## Document control
@@ -190,3 +187,6 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 | 1.8 | 2026-04-14 | Updated profile default endpoint reference to `/api/auth/me` |
 | 1.9 | 2026-04-14 | Replaced stale attendees/my-activities wording with current registrations and staging-parity status |
 | 2.0 | 2026-04-16 | OpenAPI in `api-docs.json` is canonical contract; handoff doc is coordination index; Phase 2 Google path aligned with spec |
+| 2.1 | 2026-04-16 | Status snapshot: email + Google on staging/TestFlight; Phase 2 row 3 marked verified |
+| 2.2 | 2026-04-16 | Active track: Phase A (mock-first QA) before next release spike; fix V2 vs Phase 2 wording |
+| 2.3 | 2026-04-16 | Staging: web-created organizer event visible in app Active events |

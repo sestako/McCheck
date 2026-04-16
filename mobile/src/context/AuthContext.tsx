@@ -21,14 +21,12 @@ import {
   USE_MOCK_API,
 } from '../config/env';
 import { getMockScenario } from '../config/mockScenario';
+import { parseMeApiResponse, placeholderAuthUser, type AuthUser } from '../auth/sessionUser';
+
+export type { AuthUser } from '../auth/sessionUser';
 
 const TOKEN_KEY = 'mcheck_auth_token';
 const USER_EMAIL_KEY = 'mcheck_user_email';
-
-export type AuthUser = {
-  email: string;
-  displayName: string;
-};
 
 type AuthContextValue = {
   ready: boolean;
@@ -59,7 +57,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ]);
         if (cancelled) return;
         setToken(t);
-        if (email) setUser({ email, displayName: email.split('@')[0] ?? 'Organizer' });
+        if (email) setUser(placeholderAuthUser(email));
+        if (t && !USE_MOCK_API) {
+          try {
+            const me = await fetchMeWithToken(t);
+            if (!cancelled) setUser(me);
+          } catch {
+            /* keep placeholder from email */
+          }
+        }
       } finally {
         if (!cancelled) setReady(true);
       }
@@ -84,10 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await SecureStore.setItemAsync(TOKEN_KEY, mockToken);
       await SecureStore.setItemAsync(USER_EMAIL_KEY, normalizedEmail);
       setToken(mockToken);
-      setUser({
-        email: normalizedEmail,
-        displayName: normalizedEmail.split('@')[0] ?? 'Organizer',
-      });
+      setUser(placeholderAuthUser(normalizedEmail));
       return;
     }
 
@@ -111,7 +114,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? await fetchMeWithToken(tokenFromLogin).catch(() => null)
         : await fetchMeWithToken(null).catch(() => null);
     const finalEmail = meUser?.email ?? normalizedEmail;
-    const finalDisplay = meUser?.displayName ?? finalEmail.split('@')[0] ?? 'Organizer';
     const finalToken = tokenFromLogin ?? (await SecureStore.getItemAsync(TOKEN_KEY)) ?? '';
     if (!finalToken) {
       throw new Error('Login succeeded but no API token was returned.');
@@ -120,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.setItemAsync(TOKEN_KEY, finalToken);
     await SecureStore.setItemAsync(USER_EMAIL_KEY, finalEmail);
     setToken(finalToken);
-    setUser({ email: finalEmail, displayName: finalDisplay });
+    setUser(meUser ?? placeholderAuthUser(finalEmail));
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
@@ -130,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await SecureStore.setItemAsync(TOKEN_KEY, mockToken);
       await SecureStore.setItemAsync(USER_EMAIL_KEY, email);
       setToken(mockToken);
-      setUser({ email, displayName: 'Organizer' });
+      setUser({ ...placeholderAuthUser(email), displayName: 'Organizer' });
       return;
     }
     throw new Error('Use the Google button flow (OAuth) when not in mock mode.');
@@ -164,7 +166,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!finalEmail) {
       throw new Error('Google login succeeded but profile has no email. Check /auth/me mapping.');
     }
-    const finalDisplay = meUser?.displayName ?? finalEmail.split('@')[0] ?? 'Organizer';
     const finalToken = tokenFromLogin ?? (await SecureStore.getItemAsync(TOKEN_KEY)) ?? '';
     if (!finalToken) {
       throw new Error('Google login succeeded but no API token was returned.');
@@ -173,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.setItemAsync(TOKEN_KEY, finalToken);
     await SecureStore.setItemAsync(USER_EMAIL_KEY, finalEmail);
     setToken(finalToken);
-    setUser({ email: finalEmail, displayName: finalDisplay });
+    setUser(meUser ?? placeholderAuthUser(finalEmail));
   }, []);
 
   const signOut = useCallback(async () => {
@@ -240,32 +241,9 @@ async function fetchMeWithToken(token: string | null): Promise<AuthUser> {
   if (!res.ok) {
     throw new ApiError(parseApiErrorBody(body, 'Failed to fetch profile'), res.status);
   }
-  const user = extractUser(body);
+  const user = parseMeApiResponse(body);
   if (!user) throw new Error('Profile response is missing user payload.');
   return user;
-}
-
-function extractUser(body: unknown): AuthUser | null {
-  const r = body as Record<string, unknown> | null;
-  const data = (r?.data as Record<string, unknown> | undefined) ?? r;
-  const u =
-    (data?.user as Record<string, unknown> | undefined) ??
-    (data?.me as Record<string, unknown> | undefined) ??
-    data;
-  const email =
-    typeof u?.email === 'string'
-      ? u.email.trim().toLowerCase()
-      : typeof u?.mail === 'string'
-        ? u.mail.trim().toLowerCase()
-        : '';
-  if (!email) return null;
-  const displayName =
-    (typeof u?.publicName === 'string' && u.publicName) ||
-    (typeof u?.displayName === 'string' && u.displayName) ||
-    (typeof u?.name === 'string' && u.name) ||
-    email.split('@')[0] ||
-    'Organizer';
-  return { email, displayName };
 }
 
 export function useAuth(): AuthContextValue {

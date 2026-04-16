@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect } from 'react';
@@ -9,7 +10,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { initObservability } from './src/lib/observability';
 import { RootNavigator } from './src/navigation/RootNavigator';
 
-export default function App() {
+function App() {
   useEffect(() => {
     initObservability();
   }, []);
@@ -23,6 +24,8 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(App);
 
 const styles = StyleSheet.create({
   root: { flex: 1 },

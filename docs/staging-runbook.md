@@ -1,6 +1,8 @@
 # McCheck — staging integration runbook
 
-Use this when MoveConcept exposes **staging** and McCheck switches from mocks to the real API.
+Use this when testing McCheck against **MoveConcept staging** (or after backend changes). The app supports **email + Google** auth and real activities/registrations when `EXPO_PUBLIC_USE_MOCK_API=false`.
+
+**Validated (2026-04-16):** Create an activity on the **staging MoveConcept site** while signed in as the organizer; after signing into McCheck with the **same account**, the event appears under **Active events**.
 
 ## Roles (fill in for your org)
 
@@ -17,6 +19,7 @@ Use this when MoveConcept exposes **staging** and McCheck switches from mocks to
 - [ ] At least one **owned** activity with **registrations** (non-empty guest list).
 - [ ] Backend confirms currently available endpoints in OpenAPI are deployed to staging.
 - [ ] Any gaps between live staging and [api-docs.json](./api-docs.json) are tracked as tickets (policy-only items may still live in [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md)).
+- [ ] Optional: **EXPO_PUBLIC_SENTRY_DSN** set on the EAS **production** environment so release builds report crashes (Sentry init runs only outside `__DEV__`).
 
 ## One-time client setup (`mobile/`)
 
@@ -36,37 +39,35 @@ Use this when MoveConcept exposes **staging** and McCheck switches from mocks to
 2. **POST `/auth/login` failure**
    - Wrong password.
    - Confirm user-friendly error copy is shown (no raw JSON dump).
-3. **GET `/auth/me`**
+3. **Google sign-in (`POST /auth/login/social/google`)**
+   - With `EXPO_PUBLIC_GOOGLE_*` set (see `mobile/.env.example`), tap **Continue with Google**, complete browser OAuth, confirm same organizer session as email path and token persists after restart.
+4. **GET `/auth/me`**
    - Confirm profile identity matches logged-in organizer.
-4. **DELETE `/auth/logout`**
+5. **DELETE `/auth/logout`**
    - Confirm session is cleared and protected screens are no longer accessible.
 
 ### B. Activities list contract
 
-5. **GET `/auth/users/me/activities` happy path**
+6. **GET `/users/me/activities` happy path** (full URL: `{base}/api/users/me/activities`; **`/api/auth/users/me/activities` is not deployed** — 404.)
+   - McCheck loads **`filter=draft`**, **`filter=upcoming`**, and **`filter=ongoing`** (merged), then falls back to no filter if all buckets are empty — see `mobile/src/api/real/realActivitiesApi.ts`.
    - Confirm list renders and belongs to current organizer.
    - Confirm date/state formatting and no layout issues with real data.
-6. **List edge checks**
+7. **List edge checks**
    - Empty list account (if available) shows empty state.
    - Very long activity title does not break card layout.
 
 ### C. Registrations contract
 
-7. **GET `/activities/{activity}/registrations` page 1**
+8. **GET `/activities/{activity}/registrations` page 1**
    - Confirm rows render names and blocked badge logic.
-8. **Pagination**
+9. **Pagination**
    - Scroll/load next page and verify no duplicate rows or crashes.
-9. **Forbidden case**
+10. **Forbidden case**
    - Test non-owner activity if available; confirm expected `403` UX.
 
-### D. Known gaps handling (expected for now)
+### D. OpenAPI parity (optional regression)
 
-10. **No single-detail endpoint**
-    - Detail screen should fail gracefully or use list payload fallback without crash.
-11. **No server search param**
-    - Search behavior should be clearly marked as temporary/client-side fallback.
-12. **No counts in `MyActivityResource`**
-    - Count UI should degrade gracefully (hidden/placeholder), never show broken values.
+11. Compare a few responses to **`docs/api-docs.json`** (e.g. activity detail, registrations `search`, list counts). If staging drifts from the snapshot, refresh the JSON export and open a ticket.
 
 **Pass:** primary path works; no unexpected red screens. **Fail:** open ticket with HTTP status, response snippet (no secrets), and screen.
 
@@ -84,3 +85,8 @@ Use this when MoveConcept exposes **staging** and McCheck switches from mocks to
 | 1.1 | 2026-04-13 | Replaced generic smoke list with endpoint-by-endpoint 20-30 min checklist; aligned with current missing-items handoff doc |
 | 1.2 | 2026-04-14 | Updated auth/logout and my-activities endpoint names to current API contract |
 | 1.3 | 2026-04-16 | Preconditions reference `api-docs.json` vs live staging drift |
+| 1.4 | 2026-04-16 | Google social login smoke step; removed obsolete “API gaps” section (OpenAPI now documents detail, search, counts) |
+| 1.5 | 2026-04-16 | Note: web-created staging event visible in app Active events |
+| 1.6 | 2026-04-16 | Document merged `filter=upcoming` + `ongoing` for my-activities (client fix for empty list) |
+| 1.7 | 2026-04-16 | Correct my-activities URL: `GET /users/me/activities` (`/api/users/me/activities`); document `draft` merge; `/api/auth/users/me/activities` 404s on staging |
+| 1.8 | 2026-04-16 | Optional precondition: `EXPO_PUBLIC_SENTRY_DSN` on EAS for release crash reporting |

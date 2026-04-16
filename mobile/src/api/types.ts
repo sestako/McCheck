@@ -1,4 +1,4 @@
-/** Mirrors MoveConcept `ActivityResource` subset for V1. */
+/** Mirrors MoveConcept `ActivityResource` fields used by McCheck (no long `description`). */
 export interface ActivityOwner {
   id: number;
   /** Display name; backend may use different field names — map in API layer. */
@@ -17,6 +17,14 @@ export interface Activity {
   registrationsCount: number;
   attendingGuestsCount: number;
   owner: ActivityOwner;
+  address: string | null;
+  lat: number | null;
+  lon: number | null;
+  category: string | null;
+  slug: string | null;
+  isSpecial: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export interface UserSummary {

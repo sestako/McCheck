@@ -2,6 +2,27 @@ import type { Activity, AttendeeRow } from '../types';
 
 const owner = { id: 1, displayName: 'Alex Organizer' };
 
+function activityDetailFields(
+  override: Partial<
+    Pick<
+      Activity,
+      'address' | 'lat' | 'lon' | 'category' | 'slug' | 'isSpecial' | 'createdAt' | 'updatedAt'
+    >
+  > = {}
+): Pick<Activity, 'address' | 'lat' | 'lon' | 'category' | 'slug' | 'isSpecial' | 'createdAt' | 'updatedAt'> {
+  return {
+    address: null,
+    lat: null,
+    lon: null,
+    category: null,
+    slug: null,
+    isSpecial: false,
+    createdAt: null,
+    updatedAt: null,
+    ...override,
+  };
+}
+
 /**
  * Baseline mock activities: one upcoming, one ongoing, one past (filtered out by isActiveEvent).
  * Used for normal mock mode.
@@ -19,6 +40,16 @@ export const mockActivitiesCore: Activity[] = [
     registrationsCount: 142,
     attendingGuestsCount: 8,
     owner,
+    ...activityDetailFields({
+      address: '123 River Road, Springfield',
+      lat: 50.075538,
+      lon: 14.4378,
+      category: 'running',
+      slug: 'spring-5k-packet-pickup',
+      isSpecial: true,
+      createdAt: '2025-11-01T09:00:00.000Z',
+      updatedAt: '2026-01-15T12:30:00.000Z',
+    }),
   },
   {
     id: 102,
@@ -32,6 +63,7 @@ export const mockActivitiesCore: Activity[] = [
     registrationsCount: 44,
     attendingGuestsCount: 2,
     owner,
+    ...activityDetailFields({ category: 'fitnessConditioning', slug: 'workshop-door-check-in' }),
   },
   {
     id: 103,
@@ -45,6 +77,7 @@ export const mockActivitiesCore: Activity[] = [
     registrationsCount: 80,
     attendingGuestsCount: 0,
     owner,
+    ...activityDetailFields(),
   },
 ];
 
@@ -64,6 +97,7 @@ export const mockActivitiesEdge: Activity[] = [
     registrationsCount: 3,
     attendingGuestsCount: 1,
     owner,
+    ...activityDetailFields({ slug: 'very-long-title-edge', lat: -33.8688, lon: 151.2093 }),
   },
   {
     id: 105,
@@ -77,6 +111,7 @@ export const mockActivitiesEdge: Activity[] = [
     registrationsCount: 0,
     attendingGuestsCount: 0,
     owner,
+    ...activityDetailFields(),
   },
   {
     id: 106,
@@ -90,6 +125,7 @@ export const mockActivitiesEdge: Activity[] = [
     registrationsCount: 250,
     attendingGuestsCount: 60,
     owner,
+    ...activityDetailFields({ address: 'Arena North, Gate 4' }),
   },
 ];
 

@@ -27,6 +27,32 @@ function toBadgeLabel(state: string): string {
   return state.replace(/_/g, ' ').toUpperCase();
 }
 
+/** Human-readable label for API enum-style categories (e.g. `fitnessConditioning`). */
+function formatCategoryLabel(raw: string): string {
+  const spaced = raw.replace(/([a-z])([A-Z])/g, '$1 $2');
+  return spaced
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function formatInstant(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function formatCoordinates(lat: number, lon: number): string {
+  return `${lat.toFixed(5)}°, ${lon.toFixed(5)}°`;
+}
+
 export function EventDetailScreen({ route, navigation }: Props) {
   const { activityId } = route.params;
   const { activitiesApi } = useAuth();
@@ -86,6 +112,7 @@ export function EventDetailScreen({ route, navigation }: Props) {
         <Text style={styles.when}>{formatRange(activity.start, activity.end)}</Text>
         <View style={styles.badgeRow}>
           <Text style={styles.stateBadge}>{toBadgeLabel(activity.state)}</Text>
+          {activity.isSpecial ? <Text style={styles.specialBadge}>Special</Text> : null}
         </View>
 
         <View style={styles.statRow}>
@@ -113,6 +140,16 @@ export function EventDetailScreen({ route, navigation }: Props) {
         <DetailRow label="Owner" value={activity.owner.displayName} />
         <DetailRow label="UUID" value={activity.uuid} mono />
         {activity.teaser ? <DetailRow label="About" value={activity.teaser} multiline /> : null}
+        {activity.address ? <DetailRow label="Address" value={activity.address} multiline /> : null}
+        {activity.lat != null && activity.lon != null ? (
+          <DetailRow label="Coordinates" value={formatCoordinates(activity.lat, activity.lon)} mono />
+        ) : null}
+        {activity.category ? (
+          <DetailRow label="Category" value={formatCategoryLabel(activity.category)} />
+        ) : null}
+        {activity.slug ? <DetailRow label="Slug" value={activity.slug} mono /> : null}
+        {activity.createdAt ? <DetailRow label="Created" value={formatInstant(activity.createdAt)} /> : null}
+        {activity.updatedAt ? <DetailRow label="Updated" value={formatInstant(activity.updatedAt)} /> : null}
       </View>
 
       <Pressable
@@ -182,7 +219,13 @@ const styles = StyleSheet.create({
     color: colors.onSurfaceVariant,
     fontSize: type.bodyMd,
   },
-  badgeRow: { marginTop: space.sm },
+  badgeRow: {
+    marginTop: space.sm,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: space.xs,
+    alignItems: 'center',
+  },
   stateBadge: {
     alignSelf: 'flex-start',
     backgroundColor: colors.surfaceContainerLow,
@@ -193,6 +236,16 @@ const styles = StyleSheet.create({
     fontSize: type.labelXs,
     fontWeight: '700',
     textTransform: 'uppercase',
+    overflow: 'hidden',
+  },
+  specialBadge: {
+    backgroundColor: colors.primaryContainer,
+    color: colors.onPrimary,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    fontSize: type.labelXs,
+    fontWeight: '700',
     overflow: 'hidden',
   },
   statRow: {

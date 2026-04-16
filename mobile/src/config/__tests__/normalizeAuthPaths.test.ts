@@ -19,5 +19,14 @@ describe('normalizeAuthPath', () => {
 
   it('passes through valid custom paths', () => {
     expect(normalizeAuthPath('/v2/auth/login', '/api/auth/login', ['/api/login'])).toBe('/v2/auth/login');
+
+    expect(
+      normalizeAuthPath(undefined, '/api/users/me/activities', ['/api/auth/users/me/activities'])
+    ).toBe('/api/users/me/activities');
+    expect(
+      normalizeAuthPath('/api/auth/users/me/activities', '/api/users/me/activities', [
+        '/api/auth/users/me/activities',
+      ])
+    ).toBe('/api/users/me/activities');
   });
 });
