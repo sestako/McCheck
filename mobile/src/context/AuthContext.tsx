@@ -244,7 +244,7 @@ async function fetchMeWithToken(token: string | null): Promise<AuthUser> {
     throw new ApiError(parseApiErrorBody(body, 'Failed to fetch profile'), res.status);
   }
   const user = parseMeApiResponse(body);
-  if (!user) throw new Error('Profile response is missing user payload.');
+  if (!user) throw new Error('Me response is missing user payload.');
   return user;
 }
 

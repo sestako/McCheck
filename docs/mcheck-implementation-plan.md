@@ -4,13 +4,13 @@
 
 **Completed in mobile (`mobile/`):**
 
-- Expo + TypeScript app; core V1 screens: **Login** (email + **Google**), **Active events**, **Event detail**, **Guest list**, **Profile**.
+- Expo + TypeScript app; core V1 screens: **Login** (email + **Google**), **Active events**, **Event detail**, **Guest list**, **Settings**; authenticated shell uses **bottom tabs** (**Events** \| **Attendees** \| **Settings**) aligned with Stitch **Event Hub** HTML.
 - API layer: **mock** and **real** clients behind `createActivitiesApi`; contract aligned with **`docs/api-docs.json`** (staging OpenAPI snapshot).
 - **Auth:** `AuthContext` — email `POST /api/auth/login`; Google via `GoogleSignInButton` + `@react-native-google-signin/google-signin`, then `POST /api/auth/login/social/google` with `accessToken` + `deviceName`; token in SecureStore; `/api/auth/me` for profile; logout `DELETE /api/auth/logout`.
 - **Google / devices:** **`@react-native-google-signin/google-signin`** (not Expo Go). Before each interactive sign-in the app calls **`GoogleSignin.signOut()`** so Android shows the **account picker**; **`signOut()`** in `AuthContext` also clears the Google SDK session. iOS **EAS production** → TestFlight; Android **EAS `preview` APK** (QR on build page) or **production AAB**; env in `mobile/eas.json` / EAS dashboard.
-- **V1 iOS:** Primary organizer path verified on **iOS** (TestFlight / device): login → active events → detail → guest list → profile (scrollable) → logout — **signed off 2026-04-17**.
+- **V1 iOS:** Primary organizer path verified on **iOS** (TestFlight / device): login → active events → detail → guest list → settings (scrollable) → logout — **signed off 2026-04-17**.
 - **V1 Android:** Same organizer smoke path verified on a **physical device** against **MoveConcept staging** (EAS native build; email + Google) — **signed off 2026-04-19**.
-- Stitch-inspired UI tokens and polish; **Retry** on event detail + guest list errors; mapper unit tests.
+- Stitch-inspired UI tokens and polish; **Settings** matches Stitch **#10** scope (account from **`/me`** + Connection diagnostics + sign out) and pulls **named colors + `ROUND_EIGHT`** from the McCheck Stitch project via MCP `list_projects` (there is **no** separate “Settings” screen in current MCP `list_screens` — only e.g. **Profile & Staff**). **Retry** on event detail + guest list errors; mapper unit tests.
 - **CI:** GitHub Actions — `npm run typecheck` + `npm test` on `mobile/`; `initObservability` placeholder for Sentry.
 - **Staging (real data):** An activity **created on MoveConcept staging** by the signed-in organizer **appears in Active events** in the app (same account as web) — validated 2026-04-16.
 
@@ -42,7 +42,7 @@
 | **My events** | List **activities I own** that are **upcoming / ongoing** (exact filter = product + API contract). |
 | **Event detail** | Screen from `GET /api/activities/{id}` (or fields from list if the list endpoint is enriched). |
 | **Guest list** | Paginated list + search, wired to registrations API; **owner-only** access **confirmed** on MoveConcept production (2026-04-16). |
-| **Profile** | Read-only self profile + logout (minimal). |
+| **Settings** | Read-only account from `/me` (photo, name, details) + connection diagnostics + logout. |
 | **Design** | Stitch as reference; implement natively (Forest Minimalist / tokens in `mcheck-design-vs-backend.md`). |
 
 **Backend prerequisites for V1 (MoveConcept):**
@@ -67,10 +67,10 @@ McCheck development can start **before** staging parity is finalized. Use **type
 |-------|------------|
 | **Repo / tooling** | Bootstrap app (e.g. Expo + TypeScript or chosen stack), lint/format, folder layout (`features/`, `api/`, `screens/`). |
 | **Config** | `.env.example`: `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_USE_MOCK_API`, optional auth path overrides; no secrets in git. |
-| **Navigation** | Stack/tab shell: login → active events → detail → guest list → profile. |
+| **Navigation** | Stack/tab shell: login → active events → detail → guest list → settings. |
 | **Design system** | Theme from Stitch (colors, type, spacing); shared components (buttons, lists, app bar, empty/error/loading). |
 | **API layer** | TypeScript types + functions: `getMyActivities()`, `getActivity(id)`, `getAttendees(id, page, search)` — **mock + real** implementations behind one interface. |
-| **Screens (UI)** | Login layout (email + Google); active events list; event detail; guest list + search + pagination UX; profile + logout (clears local session in mock mode). |
+| **Screens (UI)** | Login layout (email + Google); active events list; event detail; guest list + search + pagination UX; settings + logout (clears local session in mock mode). |
 | **Product guard** | Central helper e.g. `isActiveEvent(activity)` for “upcoming or ongoing” — adjust in **one place** when backend contract is final. |
 | **Coordination** | Share **mock JSON shapes** with MoveConcept so live API responses stay aligned; treat **`docs/api-docs.json`** as the OpenAPI contract and file tickets for any drift from staging. See [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md) for a short index and policy notes. |
 
@@ -89,7 +89,7 @@ Do this **once** staging (or prod) matches the contract in **`docs/api-docs.json
 | 3 | **My activities:** Replace mock `getMyActivities()` with real `GET` (owner, upcoming/ongoing); fix list mapping if field names differ from mocks. |
 | 4 | **Activity detail:** Confirm `GET /api/activities/{id}` matches types; handle 403/404. |
 | 5 | **Guest list:** Wire registrations route; confirm **only owner** can load (retest with non-owner token — expect 403). |
-| 6 | **Profile:** User from `EXPO_PUBLIC_AUTH_ME_PATH` (default `/api/auth/me`) after login — align response with `extractUser` in `AuthContext` (or agreed alternative). |
+| 6 | **Settings:** User from `EXPO_PUBLIC_AUTH_ME_PATH` (default `/api/auth/me`) after login — align response with `extractUser` in `AuthContext` (or agreed alternative). |
 | 7 | **Remove / narrow mocks** — keep fixtures for **tests** only if useful. |
 | 8 | **E2E pass** on staging: login → list → detail → search attendees → logout. |
 | 9 | Update docs if response shapes or query params differ from what McCheck assumed. |
@@ -109,7 +109,7 @@ Use this as the first working sequence once staging API pieces are delivered.
 | 5 | McCheck | Integrate event detail with 403/404 handling and user-facing fallback states | Detail screen works for owned events and fails safely otherwise |
 | 6 | McCheck + MoveConcept | Integrate registrations with owner-only authorization verification | Owner loads registrations; non-owner gets **403** — **policy confirmed production 2026-04-16** |
 | 7 | McCheck | Remove mock-first assumptions from runtime paths (keep mocks only for tests/dev fallback) | Normal app flow runs fully on real API |
-| 8 | McCheck | Run staging QA pass (login → events → detail → guest list search/pagination → profile/logout) | No blocker regressions in primary path |
+| 8 | McCheck | Run staging QA pass (login → events → detail → guest list search/pagination → settings/logout) | No blocker regressions in primary path |
 | 9 | McCheck | Freeze V1 release candidate scope and create Phase B backlog (scanner/check-in) | **iOS:** V1 signed off 2026-04-17 (TestFlight / device). **Android:** V1 signed off 2026-04-19 (**physical device**, staging, EAS native build). |
 
 **Platform note (2026-04-19):** Phase 2 steps **1–8** are **done on staging for both iOS and Android** (including organizer smoke on **physical** hardware). **Play Console** `eas submit` / internal testing track is **store distribution**, not a blocker for V1 functional sign-off.

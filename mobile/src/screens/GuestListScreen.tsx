@@ -1,4 +1,4 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -14,10 +14,20 @@ import type { AttendeeRow } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { userFriendlyApiMessage } from '../lib/apiErrors';
 import { reportError } from '../lib/observability';
-import type { RootStackParamList } from '../navigation/types';
+import type { AttendeesStackParamList, EventStackParamList } from '../navigation/types';
+
+/** Both stacks register `ScanTickets` with identical params; TS union `navigate` is incompatible. */
+function navigateToScanTickets(
+  navigation: NativeStackScreenProps<EventStackParamList, 'GuestList'>['navigation'] | NativeStackScreenProps<AttendeesStackParamList, 'GuestList'>['navigation'],
+  params: { activityId: number; activityName: string }
+) {
+  (navigation as NativeStackNavigationProp<EventStackParamList>).navigate('ScanTickets', params);
+}
 import { colors, radius, space, type } from '../theme/tokens';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'GuestList'>;
+type Props =
+  | NativeStackScreenProps<EventStackParamList, 'GuestList'>
+  | NativeStackScreenProps<AttendeesStackParamList, 'GuestList'>;
 
 function formatShortTime(iso: string): string {
   const d = new Date(iso);
@@ -52,9 +62,7 @@ export function GuestListScreen({ route, navigation }: Props) {
           accessibilityRole="button"
           accessibilityLabel="Scan tickets"
           hitSlop={12}
-          onPress={() =>
-            navigation.navigate('ScanTickets', { activityId, activityName })
-          }
+          onPress={() => navigateToScanTickets(navigation, { activityId, activityName })}
           style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1, paddingHorizontal: 8 })}
         >
           <Text style={styles.headerScan}>Scan</Text>

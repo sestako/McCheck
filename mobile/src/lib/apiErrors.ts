@@ -1,6 +1,6 @@
 import { ApiError } from '../api/types';
 
-/** Shown in Profile (live mode) and docs — single place for connection hints. */
+/** Shown in Settings (live mode) and docs — single place for connection hints. */
 export function liveApiTroubleshootingHint(): string {
   return 'Check EXPO_PUBLIC_API_BASE_URL, VPN or firewall, and that this device can reach the API host.';
 }

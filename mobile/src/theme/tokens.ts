@@ -2,8 +2,10 @@
  * Forest Minimalist (Stitch) — McCheck Event Manager.
  * @see docs/mcheck-design-vs-backend.md
  */
+/** Named colors aligned with Stitch project “McCheck Event Manager” (`list_projects` designTheme). */
 export const colors = {
   surface: '#f9f9fe',
+  surfaceContainer: '#ededf2',
   surfaceContainerLow: '#f3f3f8',
   surfaceContainerLowest: '#ffffff',
   primary: '#005f48',
@@ -11,6 +13,8 @@ export const colors = {
   onSurface: '#1a1c1f',
   onSurfaceVariant: '#3e4944',
   onPrimary: '#ffffff',
+  secondaryContainer: '#c5ebda',
+  outline: '#6e7a74',
   outlineVariant: '#bdc9c2',
   outlineSoft: '#d7e0db',
   error: '#ba1a1a',

@@ -120,7 +120,7 @@ After duplicate cleanup, treat these as the **UX targets** (names from Stitch MC
 | 7 | **Activity history** | Yes | **None** | **Check-in audit**; attribute rows to **user_id** (organizer) or **invite/session** (co-worker) |
 | 8 | **Profile & Staff** | Yes | **User** APIs only for **organizer** profile | **List invites / status** for an activity; not “staff users” with accounts |
 | 9 | **Add co-worker** | Yes | **None** | **Create invite** (email + activity + role), send mail, **revoke** endpoint; **no** requirement for invitee to exist in `users` table |
-| 10 | **Settings** | Yes | Partial (client prefs) | Server-backed prefs if needed; push, locale, etc. |
+| 10 | **Settings** | Yes | **`/me` + env** (McCheck mobile: read-only account, Connection diagnostics, sign out — no separate “Settings” frame in Stitch MCP `list_screens`; theme from `list_projects`) | Server-backed prefs if needed; push, locale, etc. |
 | 11 | **Requirements doc** | N/A | N/A | Keep as internal traceability only |
 
 ---

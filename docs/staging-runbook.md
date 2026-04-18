@@ -92,7 +92,7 @@ MoveConcept stores **database** notifications for the **activity owner** when so
 
 ## When something breaks
 
-1. Confirm **base URL** and **mock flag** in Profile.
+1. Confirm **base URL** and **mock flag** in Settings.
 2. Compare payload with current app mappers in `mobile/src/api/real/`.
 3. Re-run `npm test` and `npm run typecheck` in `mobile/`.
 

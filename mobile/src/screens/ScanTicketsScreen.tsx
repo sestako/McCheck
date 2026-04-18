@@ -12,10 +12,12 @@ import {
 import type { TicketResolveOk } from '../api/checkInTypes';
 import { useAuth } from '../context/AuthContext';
 import { extractTicketPayload } from '../lib/extractTicketPayload';
-import type { RootStackParamList } from '../navigation/types';
+import type { AttendeesStackParamList, EventStackParamList } from '../navigation/types';
 import { colors, radius, space, type } from '../theme/tokens';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'ScanTickets'>;
+type Props =
+  | NativeStackScreenProps<EventStackParamList, 'ScanTickets'>
+  | NativeStackScreenProps<AttendeesStackParamList, 'ScanTickets'>;
 
 const BARCODE_DEBOUNCE_MS = 1400;
 

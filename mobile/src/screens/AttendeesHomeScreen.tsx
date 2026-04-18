@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,10 +13,10 @@ import {
 import type { Activity } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { userFriendlyApiMessage } from '../lib/apiErrors';
-import type { EventStackParamList } from '../navigation/types';
+import type { AttendeesStackParamList } from '../navigation/types';
 import { colors, radius, space, type } from '../theme/tokens';
 
-type Props = NativeStackScreenProps<EventStackParamList, 'ActiveEvents'>;
+type Props = NativeStackScreenProps<AttendeesStackParamList, 'AttendeesHome'>;
 
 function formatStart(startIso: string): string {
   const d = new Date(startIso);
@@ -34,17 +34,15 @@ function toBadgeLabel(state: string): string {
   return state.replace(/_/g, ' ').toUpperCase();
 }
 
-export function ActiveEventsScreen({ navigation }: Props) {
+/**
+ * Attendees tab root (Stitch bottom nav): same activities as Events, opens guest list directly.
+ */
+export function AttendeesHomeScreen({ navigation }: Props) {
   const { activitiesApi } = useAuth();
   const [items, setItems] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const registrationsTotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.registrationsCount, 0),
-    [items]
-  );
 
   const load = useCallback(async () => {
     setError(null);
@@ -78,19 +76,9 @@ export function ActiveEventsScreen({ navigation }: Props) {
     <View style={styles.container}>
       <View style={styles.hero}>
         <Text accessibilityRole="header" style={styles.heroTitle}>
-          Active events
+          Attendees
         </Text>
-        <Text style={styles.heroSubtitle}>Draft, upcoming, or ongoing events you own.</Text>
-        <View style={styles.heroStatsRow}>
-          <View style={styles.statPill}>
-            <Text style={styles.statValue}>{items.length}</Text>
-            <Text style={styles.statLabel}>events</Text>
-          </View>
-          <View style={styles.statPill}>
-            <Text style={styles.statValue}>{registrationsTotal}</Text>
-            <Text style={styles.statLabel}>registrations</Text>
-          </View>
-        </View>
+        <Text style={styles.heroSubtitle}>Select an event to view its guest list.</Text>
       </View>
 
       {error ? (
@@ -103,7 +91,7 @@ export function ActiveEventsScreen({ navigation }: Props) {
       ) : null}
 
       <FlatList
-        accessibilityLabel="List of your active events"
+        accessibilityLabel="Events you can open guest lists for"
         data={items}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
@@ -123,7 +111,12 @@ export function ActiveEventsScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <Pressable
             style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-            onPress={() => navigation.navigate('EventDetail', { activityId: item.id })}
+            onPress={() =>
+              navigation.navigate('GuestList', {
+                activityId: item.id,
+                activityName: item.name,
+              })
+            }
           >
             <View style={styles.rowTop}>
               <Text style={styles.rowTitle} numberOfLines={3} ellipsizeMode="tail">
@@ -134,7 +127,6 @@ export function ActiveEventsScreen({ navigation }: Props) {
             <Text style={styles.rowMeta}>
               {item.registrationsCount} registrations
               {item.capacity != null ? ` · capacity ${item.capacity}` : ''}
-              {item.attendingGuestsCount > 0 ? ` · guests ${item.attendingGuestsCount}` : ''}
             </Text>
             <Text style={styles.rowWhen}>{formatStart(item.start)}</Text>
           </Pressable>
@@ -167,22 +159,6 @@ const styles = StyleSheet.create({
     color: colors.onSurfaceVariant,
     fontSize: type.bodyMd,
   },
-  heroStatsRow: {
-    marginTop: space.md,
-    flexDirection: 'row',
-    gap: space.sm,
-  },
-  statPill: {
-    backgroundColor: colors.surfaceContainerLow,
-    borderRadius: radius.md,
-    paddingVertical: space.sm,
-    paddingHorizontal: space.md,
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: space.xs,
-  },
-  statValue: { fontSize: type.bodyLg, fontWeight: '700', color: colors.onSurface },
-  statLabel: { fontSize: type.labelSm, color: colors.onSurfaceVariant },
   listContent: { paddingHorizontal: space.lg, paddingBottom: space.xl },
   row: {
     backgroundColor: colors.surfaceContainerLowest,

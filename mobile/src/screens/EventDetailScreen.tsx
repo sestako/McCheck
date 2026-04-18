@@ -4,10 +4,10 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import type { Activity } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { userFriendlyApiMessage } from '../lib/apiErrors';
-import type { RootStackParamList } from '../navigation/types';
+import type { EventStackParamList } from '../navigation/types';
 import { colors, radius, space, type } from '../theme/tokens';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'EventDetail'>;
+type Props = NativeStackScreenProps<EventStackParamList, 'EventDetail'>;
 
 function formatRange(startIso: string, endIso: string): string {
   const s = new Date(startIso);

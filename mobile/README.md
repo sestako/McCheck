@@ -99,7 +99,7 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 
 - Copy `.env.example` to **`.env`** or **`.env.local`** (gitignored; good for machine-specific overrides) in `mobile/`, then set `EXPO_PUBLIC_*` as needed.
 - **`EXPO_PUBLIC_*` is inlined when Metro bundles the app.** After changing env files, restart the dev server; if values look stuck, run `npx expo start --clear`.
-- **Local env vs EAS builds:** Variables in `.env` / `.env.local` apply when you run **`expo start`** from this folder. **EAS cloud builds** do not read those files unless you explicitly load them in CI; they use **`eas.json`** `env` and any **Expo dashboard → Environment variables** for the profile. If TestFlight shows a different API URL or login path than your simulator, compare Profile in the app with your `eas.json` / dashboard values.
+- **Local env vs EAS builds:** Variables in `.env` / `.env.local` apply when you run **`expo start`** from this folder. **EAS cloud builds** do not read those files unless you explicitly load them in CI; they use **`eas.json`** `env` and any **Expo dashboard → Environment variables** for the profile. If TestFlight shows a different API URL or login path than your simulator, compare Settings in the app with your `eas.json` / dashboard values.
 - For **staging / real MoveConcept**, set `EXPO_PUBLIC_USE_MOCK_API=false` and `EXPO_PUBLIC_API_BASE_URL` (no trailing slash). Auth defaults are **`/api/auth/login`**, **`/api/auth/me`**, **`/api/auth/logout`**. The **owner activities list** defaults to **`/api/users/me/activities`** — **`/api/auth/users/me/activities`** returns **404** on MoveConcept; do not use **`/api/login`** for email auth (404); `src/config/env.ts` normalizes legacy `/api/login` to `/api/auth/login`.
 - **Google sign-in (live API):** set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` plus **`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`** and **`EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`**. Uses **`@react-native-google-signin/google-signin`** (not Expo Go — use an **EAS `preview` / `development` / `production` build**). **POST**s the token to **`/api/auth/login/social/google`** as `accessToken` (see OpenAPI `LoginViaSocialRequest`). **Setup:** [../docs/mcheck-android-google-oauth-setup.md](../docs/mcheck-android-google-oauth-setup.md) (Android SHA-1, iOS `iosUrlScheme` in `app.json`).
 - If your backend auth routes genuinely differ, override:
@@ -154,8 +154,8 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 | `src/auth/GoogleSignInButton.tsx` | Native Google Sign-In + MoveConcept social login |
 | `src/auth/nativeGoogleSignIn.ts` | `GoogleSignin.configure` / `signIn` / `getTokens` |
 | `src/lib/isActiveEvent.ts` | Upcoming / ongoing filter |
-| `src/navigation/` | Stack navigator |
-| `src/screens/` | Login, Active events, Detail, Guest list, Profile |
+| `src/navigation/` | Root stack (login vs main) + **bottom tabs** (Events / Attendees / Settings) + nested event stacks |
+| `src/screens/` | Login, Active events, Attendees home, Detail, Guest list, Scan tickets, Settings |
 | `src/theme/tokens.ts` | Forest Minimalist colors (Stitch) |
 | `src/lib/observability.ts` | Sentry placeholder / `initObservability` |
 

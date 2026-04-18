@@ -26,7 +26,7 @@ Run on simulator with **mock API** unless you are explicitly testing live stagin
 2. **Active events:** list shows mock events → pull to refresh → no crash.
 3. **Event detail:** tap an event → title, dates, stats, detail rows → **View guest list**.
 4. **Guest list:** search → scroll loads more → pull to refresh; on **`EXPO_PUBLIC_MOCK_SCENARIO=guests_403`**, initial failure shows **Retry** (not a misleading empty search state); use **`edge_layout`** and scroll to the end to confirm pagination footer **Try again** if a page fails.
-5. **Profile:** open from header → **Integration readiness** shows **Mock API**; on live API, optional rows (user id, username, …) fill after **`/auth/me`** on cold start or login → **Sign out** → back to Login.
+5. **Settings:** open **Settings** bottom tab → **Connection** shows **Mock API**; on live API, optional rows (user id, username, …) fill after **`/auth/me`** on cold start or login → **Sign out** → back to Login.
 
 **Pass:** no red screen; primary path completes. **Fail:** crash, stuck spinner, or navigation loop.
 
@@ -79,7 +79,7 @@ With **mock API** enabled, set **`EXPO_PUBLIC_MOCK_SCENARIO`** in `.env` / `.env
 | 1.3 | 2026-04-09 | Links to staging runbook, OAuth stub, store checklist; CI note |
 | 1.4 | 2026-04-16 | Clarify mocks vs staging; OAuth doc is implementation guide |
 | 1.5 | 2026-04-16 | **Current team focus** — prioritize Phase A before next release spike |
-| 1.6 | 2026-04-16 | Profile `/me` field parity + cold-start refresh; guest list empty vs error UX; optional Sentry init when DSN + non-dev + SDK installed; EAS production `android.buildType` |
+| 1.6 | 2026-04-16 | Settings `/me` field parity + cold-start refresh; guest list empty vs error UX; optional Sentry init when DSN + non-dev + SDK installed; EAS production `android.buildType` |
 | 1.7 | 2026-04-17 | **V1 iOS signed off;** Phase A reframed as ongoing regression + pre-release staging smoke |
 | 1.8 | 2026-04-18 | Staging vs Expo Go vs EAS native build; Google doc link text |
 | 1.9 | 2026-04-19 | Current focus: V1 both platforms physical staging sign-off |
