@@ -1,27 +1,29 @@
 # McCheck — implementation plan
 
-## Current status snapshot (2026-04-16)
+## Current status snapshot (2026-04-18)
 
 **Completed in mobile (`mobile/`):**
 
 - Expo + TypeScript app; core V1 screens: **Login** (email + **Google**), **Active events**, **Event detail**, **Guest list**, **Profile**.
 - API layer: **mock** and **real** clients behind `createActivitiesApi`; contract aligned with **`docs/api-docs.json`** (staging OpenAPI snapshot).
-- **Auth:** `AuthContext` — email `POST /api/auth/login`; Google via `GoogleSignInButton` + `expo-auth-session`, then `POST /api/auth/login/social/google` with `accessToken` + `deviceName`; token in SecureStore; `/api/auth/me` for profile; logout `DELETE /api/auth/logout`.
-- **Google / TestFlight:** OAuth flow waits for hook **response** after code exchange (fixes empty token on device builds). iOS **EAS production** builds submitted to TestFlight; env for staging API + Google client IDs in `mobile/eas.json` profiles.
+- **Auth:** `AuthContext` — email `POST /api/auth/login`; Google via `GoogleSignInButton` + `@react-native-google-signin/google-signin`, then `POST /api/auth/login/social/google` with `accessToken` + `deviceName`; token in SecureStore; `/api/auth/me` for profile; logout `DELETE /api/auth/logout`.
+- **Google / devices:** **`@react-native-google-signin/google-signin`** (not Expo Go). Before each interactive sign-in the app calls **`GoogleSignin.signOut()`** so Android shows the **account picker**; **`signOut()`** in `AuthContext` also clears the Google SDK session. iOS **EAS production** → TestFlight; Android **EAS `preview` APK** (QR on build page) or **production AAB**; env in `mobile/eas.json` / EAS dashboard.
+- **V1 iOS:** Primary organizer path verified on **iOS** (TestFlight / device): login → active events → detail → guest list → profile (scrollable) → logout — **signed off 2026-04-17**.
 - Stitch-inspired UI tokens and polish; **Retry** on event detail + guest list errors; mapper unit tests.
 - **CI:** GitHub Actions — `npm run typecheck` + `npm test` on `mobile/`; `initObservability` placeholder for Sentry.
 - **Staging (real data):** An activity **created on MoveConcept staging** by the signed-in organizer **appears in Active events** in the app (same account as web) — validated 2026-04-16.
 
-### Active track: Phase A (mock-first quality)
+### After iOS V1 sign-off
 
-**Do this first** before the next feature spike or wide TestFlight rollout: follow **[mcheck-phase-a.md](./mcheck-phase-a.md)** end-to-end — default **mock API** dev, **~5 min manual QA**, optional **`EXPO_PUBLIC_MOCK_SCENARIO`** matrix (one scenario at a time), keep **`npm test` / `npm run typecheck`** green. Phase A is UI/UX and client robustness **without** staging dependency.
+- **Regression hygiene:** Keep **[mcheck-phase-a.md](./mcheck-phase-a.md)** (mock script + `EXPO_PUBLIC_MOCK_SCENARIO` matrix + CI) for day-to-day work; run **[staging-runbook.md](./staging-runbook.md)** before each tagged release.
+- **Android:** **EAS Android builds** are possible anytime (`preview` = APK + install QR; `production` = AAB for Play). **Play Console distribution** may be blocked until **Google developer / organization verification** completes; then add a **Google Play service account JSON** for `eas submit --platform android` (prompted on first submit; not stored in git). **Internal testing** is the TestFlight-equivalent track. Native Google + SHA-1: [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md).
+- **V2 (later):** scanner / check-in — see **Below the line — V2**; do not start until Phase 2 kickoff steps **1–8** are green on staging **per platform** you ship (rule in Phase 2 section).
 
-**Still pending / next validation (after or parallel to Phase A):**
+**Still pending / next validation:**
 
-- Full **staging smoke** per [staging-runbook.md](./staging-runbook.md) on every release (detail, registrations **search**, owner **403** cases — **activities list** already validated with web-created event).
-- **Backend / product:** **Registrations are owner-only in production** (MoveConcept, confirmed 2026-04-16). Continue to resolve any drift between live staging and `api-docs.json`.
-- **Android:** same Google OAuth + EAS path when you cut an Android build (SHA-1 / package — see [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md)).
-- **V2 (later):** scanner / check-in — see **Below the line — V2** in this doc; do not start until Phase 2 kickoff steps **1–8** are green on staging (rule in Phase 2 section).
+- **Android:** Play verification → service account → `eas submit` → internal testers → same smoke as iOS on a physical device.
+- **Backend / product:** Continue to resolve any drift between live staging and `api-docs.json` (policy notes may still live in [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md)).
+- **V2:** Phase B backlog when you explicitly kick off scanner/check-in.
 
 ## V1 — organizer app at the door (read-focused)
 
@@ -44,7 +46,7 @@
 
 **Backend prerequisites for V1 (MoveConcept):**
 
-- **New:** `GET` (or equivalent) **`activities I own`** with filters for **upcoming + ongoing**, pagination, fields needed for list rows.
+- **My activities (done):** **`GET /users/me/activities`** — optional `filter`: `draft` \| `upcoming` \| `ongoing`; pagination; list rows include **`registrationsCount`** and **`attendingGuestsCount`** (McCheck merges filters client-side as in [staging-runbook.md](./staging-runbook.md)).
 - **Auth for mobile:** Token flow for **email** + **Google** social login → same user as web (mobile implemented; keep OpenAPI + staging in sync).
 - **Registrations (done):** **`GET /activities/{activity}/registrations`** is **owner-only** in production (confirmed MoveConcept 2026-04-16); non-owner receives **403**.
 
@@ -107,9 +109,11 @@ Use this as the first working sequence once staging API pieces are delivered.
 | 6 | McCheck + MoveConcept | Integrate registrations with owner-only authorization verification | Owner loads registrations; non-owner gets **403** — **policy confirmed production 2026-04-16** |
 | 7 | McCheck | Remove mock-first assumptions from runtime paths (keep mocks only for tests/dev fallback) | Normal app flow runs fully on real API |
 | 8 | McCheck | Run staging QA pass (login → events → detail → guest list search/pagination → profile/logout) | No blocker regressions in primary path |
-| 9 | McCheck | Freeze V1 release candidate scope and create Phase B backlog (scanner/check-in) | V1 integration milestone signed off |
+| 9 | McCheck | Freeze V1 release candidate scope and create Phase B backlog (scanner/check-in) | **iOS:** V1 signed off 2026-04-17. **Android:** repeat sign-off after Play internal track + device smoke. |
 
-**Suggested working rule:** do not start scanner/check-in work until steps 1-8 are green on staging.
+**Platform note (2026-04-17):** Steps **1–8** are **done for iOS** (staging + TestFlight). **Android** completes the same steps once Play Console access and `eas submit` are unblocked.
+
+**Suggested working rule:** do not start scanner/check-in work until steps 1-8 are green on staging **for each platform** you release.
 
 ---
 
@@ -149,9 +153,21 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 ### V5 — Polish & scale (as needed)
 
 - Offline queue for check-ins (conflict rules).
-- Push notifications (optional).
+- Push notifications (optional); see **Organizer notifications** below — **in-app first** is the recommended stepping stone.
 - API versioning / contract tests / OpenAPI.
 - App store release, analytics, crash reporting.
+
+---
+
+### Organizer notifications — in-app first, push later
+
+**MoveConcept today:** When an attendee **joins** or **cancels**, the **activity owner** gets Laravel **database** notifications (types such as `activityUserRegistered` and `activityUserCanceled`). The web reads them over authenticated **`/api/users/{user}/notifications…`** routes (list, unread count, mark read). Those routes may be **missing from the checked-in `docs/api-docs.json` snapshot** — refresh the OpenAPI export from staging (or document the paths in the handoff doc) before McCheck ships this feature.
+
+**Why in-app first:** McCheck can ship a **notification inbox** and **unread badge** by polling or refreshing on app focus (same contract as web). That validates auth, pagination, payloads, deep links to an activity, and **organizer-only** semantics without waiting on push infrastructure. **It is deliberate preparation for push:** push later adds **device token registration** and a **server-side delivery channel** (FCM/APNs/Expo); database notifications alone do not wake the OS.
+
+**Client shape:** Prefer a small **notification domain layer** (fetch list, map to UI, mark read, refresh unread) so a future push handler can produce the **same UI models** and navigation targets.
+
+**Product alignment:** Organizer-only matches the server; **upcoming / ongoing** behavior follows **registration and cancel rules** on the backend rather than a separate flag inside each notification row.
 
 ---
 
@@ -191,3 +207,6 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 | 2.2 | 2026-04-16 | Active track: Phase A (mock-first QA) before next release spike; fix V2 vs Phase 2 wording |
 | 2.3 | 2026-04-16 | Staging: web-created organizer event visible in app Active events |
 | 2.4 | 2026-04-16 | **Recorded:** MoveConcept production — registrations endpoint is **owner-only** (no cross-organizer guest list enumeration) |
+| 2.5 | 2026-04-16 | **Organizer notifications:** in-app (user notifications API) as preparation for push; OpenAPI snapshot may omit those routes |
+| 2.6 | 2026-04-17 | **V1 iOS signed off;** Android pending Play verification + submit; backend prerequisites table aligned with `GET /users/me/activities`; Phase 2 platform note |
+| 2.7 | 2026-04-18 | Snapshot: native Google Sign-In, sign-out before sign-in, EAS APK QR vs Expo Go |

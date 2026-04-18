@@ -1,13 +1,24 @@
-# McCheck — Android Google OAuth + signing (Expo / EAS)
+# McCheck — Google Sign-In (native) + Android signing (Expo / EAS)
 
-Use this when configuring **Google Cloud OAuth (Android)** and **EAS Android signing** for McCheck. App code expects:
+McCheck uses **`@react-native-google-signin/google-signin`** (same flow on **iOS and Android**). There is **no** `expo-auth-session` / `https://auth.expo.io` proxy. You need an **EAS build** or **`expo run:*`** — **not Expo Go** (Expo Go does not include this native module).
 
-- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` — Web OAuth client (used by `expo-auth-session` + token exchange).
-- `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` — Android OAuth client (required on Android; see `src/config/env.ts`).
+**Install binary on Android:** run **`eas build --platform android --profile preview`**, then open the **Expo build page** from the CLI output — use the **QR code** there to install the **APK**, or download the `.apk` / use `adb install` (see [../mobile/README.md](../mobile/README.md)).
+
+App expects:
+
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` — **Web** OAuth client (`GoogleSignin.configure({ webClientId })`).
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` — **iOS** OAuth client (bundle `com.moveconcept.mccheck`).
+- `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` — kept for parity / docs; native Android matching uses **package + SHA-1** on the Android client in Google Cloud (same project as the Web client).
 
 Package / application ID: **`com.moveconcept.mccheck`** (`mobile/app.json`).
 
-Expo Go redirect (dev only): **`https://auth.expo.io/@ondrejsestak/mccheck`** — add as **Authorized redirect URI** on the **Web** client in Google Cloud.
+## iOS URL scheme (required)
+
+`mobile/app.json` includes the config plugin **`@react-native-google-signin/google-signin`** with **`iosUrlScheme`** set to the **reversed iOS client id**:
+
+`com.googleusercontent.apps.<prefix>` where `<prefix>` is the numeric part before `.apps.googleusercontent.com` in your **iOS** OAuth client id.
+
+If you **rotate or replace** the iOS OAuth client in Google Cloud, update **`iosUrlScheme`** in `app.json` to match, then rebuild iOS.
 
 ---
 
@@ -35,7 +46,7 @@ npx eas-cli@latest credentials:configure-build -p android -e production
 
 ## 2. SHA-1 for Google Cloud (Android OAuth client)
 
-Google needs the **SHA-1 certificate fingerprint** of the key that signs the app you ship (EAS release keystore).
+Google needs the **SHA-1 certificate fingerprint** of the key that signs the **APK/AAB** you install (EAS keystore for internal builds; Play App Signing for store).
 
 From a `.jks` file:
 
@@ -45,18 +56,21 @@ keytool -list -v -keystore /path/to/your-upload-key.jks -alias YOUR_KEY_ALIAS
 
 Use the **SHA1** line in Google Cloud → **OAuth 2.0 Client ID → Android** → **SHA-1 certificate fingerprint**.
 
-**Note:** Debug builds and EAS production builds can use **different** keystores → different SHA-1. Add **both** fingerprints to the same Android OAuth client (or separate clients — then you still need one client ID in `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` that matches your shipping build).
+**Note:** Preview APK and Play production builds can use **different** keystores → different SHA-1. Add **both** fingerprints to the same Android OAuth client (or separate clients — keep `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` aligned with the client used for the build you test).
 
 ---
 
 ## 3. Google Cloud Console
 
 1. **APIs & Services → Credentials**.
-2. **Create credentials → OAuth client ID → Android**  
+2. **OAuth client ID → Android**  
    - Package name: `com.moveconcept.mccheck`  
-   - SHA-1: from step 2 (EAS upload key for store/internal builds).
-3. Ensure a **Web application** client exists; use its client ID as `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`.
-4. Copy the **Android** client’s client ID → `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`.
+   - SHA-1: from step 2 for the binary you install.
+3. **OAuth client ID → iOS**  
+   - Bundle ID: `com.moveconcept.mccheck`  
+   - Use this client’s id for `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` and derive **`iosUrlScheme`** as above.
+4. **OAuth client ID → Web application**  
+   - Use its client id as `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (required for `idToken` / server verification on both platforms).
 
 ---
 
@@ -65,7 +79,7 @@ Use the **SHA1** line in Google Cloud → **OAuth 2.0 Client ID → Android** �
 `EXPO_PUBLIC_*` is inlined at **bundle** time.
 
 - **Local:** `mobile/.env` or `mobile/.env.local` (see `mobile/.env.example`).
-- **EAS cloud builds:** set the same variables in **Expo dashboard → Environment variables** for the build profile, **or** add them under `env` in `mobile/eas.json` for `preview` / `production` (avoid committing secrets if the repo is shared; dashboard is often safer).
+- **EAS cloud builds:** variables in **Expo dashboard → Environment variables** or under `env` in `mobile/eas.json`.
 
 After changing env, restart Metro with cache clear: `npx expo start --clear`.
 
@@ -75,12 +89,15 @@ After changing env, restart Metro with cache clear: `npx expo start --clear`.
 
 - `EXPO_PUBLIC_USE_MOCK_API=false`
 - Login screen shows live Google button (not the “add OAuth client IDs” alert).
-- If Google returns no token, recheck **Android client ID**, **SHA-1**, and **package name** match the installed binary.
+- Install a **fresh EAS build** after changing `app.json` plugins or Google client ids.
 
 ---
 
 ## Document control
 
-| Version | Date       | Notes                    |
-|---------|------------|--------------------------|
-| 1.0     | 2026-04-16 | Initial Android runbook  |
+| Version | Date       | Notes |
+|---------|------------|--------|
+| 1.0     | 2026-04-16 | Initial Android runbook |
+| 1.1–1.3 | 2026-04-17–18 | Legacy `expo-auth-session` / `auth.expo.io` proxy (removed in 2.0) |
+| 2.0     | 2026-04-18 | **Native Google Sign-In** (`@react-native-google-signin/google-signin`); iOS `iosUrlScheme`; Android SHA-1 unchanged |
+| 2.1     | 2026-04-18 | Expo Go vs EAS APK QR install; align with `mobile/README.md` |

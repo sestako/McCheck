@@ -139,7 +139,7 @@ export function LoginScreen(_props: Props) {
             onPress={() =>
               Alert.alert(
                 'Google sign-in',
-                'Add OAuth client IDs to mobile/.env (see .env.example): EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID plus the iOS or Android client ID for this platform. For Expo Go, add the Expo auth redirect URL in Google Cloud Console.'
+                'Add OAuth client IDs to mobile/.env (see .env.example): EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID plus EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID and EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID. Google sign-in requires an EAS/dev build (not Expo Go); see docs/mcheck-android-google-oauth-setup.md.'
               )
             }
           >

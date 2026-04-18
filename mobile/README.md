@@ -2,11 +2,11 @@
 
 React Native app for **organizers**: active events → detail → guest list. Uses **mock API by default** in local dev; **live** behavior matches `docs/api-docs.json` (see `docs/moveconcept-backend-handoff.md`).
 
-## Current state (2026-04-16)
+## Current state (2026-04-18)
 
 - **Phase A (active):** use **mock API** for daily dev — run the checklist in [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md) (manual QA + optional `EXPO_PUBLIC_MOCK_SCENARIO`). Use `EXPO_PUBLIC_USE_MOCK_API=false` only when intentionally testing staging or shipping a build with staging env.
-- V1 organizer flow is implemented and was exercised on **staging** + **TestFlight**:
-  - **Login:** email/password and **Google** (`expo-auth-session` → `POST /api/auth/login/social/google`)
+- V1 organizer flow is implemented and was exercised on **staging** + **TestFlight** (iOS) and **EAS Android** (preview APK / production AAB):
+  - **Login:** email/password and **Google** (native `@react-native-google-signin/google-signin` → `POST /api/auth/login/social/google`). **Not available in Expo Go** — native modules require an **EAS build** or **`expo run:android` / `expo run:ios`**.
   - Active events, event detail, guest list (search, pagination, pull-to-refresh), profile + logout
 - UI: Stitch-inspired polish (tokens, spacing, typography, copy).
 
@@ -18,7 +18,7 @@ npm install
 npm start
 ```
 
-Then press `i` (iOS simulator), `a` (Android), or scan the QR code with Expo Go.
+Then press **`i`** (iOS simulator) or **`a`** (Android emulator). You can open the project in **Expo Go** from the dev-server QR for **quick JS-only checks** (e.g. mock login), but **Expo Go does not include McCheck’s native modules** (Google Sign-In, etc.) — use an **EAS `preview` / `development` / `production` binary** or **`npx expo run:android` / `npx expo run:ios`** for the full app.
 
 If **`npx expo start`** asks to install a different major (e.g. `expo@55`), answer **no**: run **`npm install`** in `mobile` first, then **`npm start`** so the CLI matches **SDK 54** (`expo` in `package.json`). You can also use **`npx --no-install expo start`** after `npm install` to force the local CLI.
 
@@ -30,6 +30,16 @@ npm run typecheck
 ```
 
 CI (GitHub Actions) runs both on changes under `mobile/` — see `../.github/workflows/mobile-ci.yml`.
+
+## Install on a physical Android phone (QR, no Play Store)
+
+McCheck is a **native** app. The QR shown by **`npx expo start`** opens **Expo Go**, which **cannot** run Google Sign-In and other native pieces.
+
+1. From `mobile/`, run an **APK** profile (e.g. **`preview`** — see `eas.json`).
+2. When the build finishes, open the **Expo dashboard** URL printed by the CLI (same as the build page).
+3. On your phone, open that URL — the page shows a **QR code** that installs the **McCheck APK** (not Expo Go loading your project).
+
+For USB sideload instead, see **Android USB install** below.
 
 ## EAS builds (optional)
 
@@ -84,7 +94,7 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 - **`EXPO_PUBLIC_*` is inlined when Metro bundles the app.** After changing env files, restart the dev server; if values look stuck, run `npx expo start --clear`.
 - **Local env vs EAS builds:** Variables in `.env` / `.env.local` apply when you run **`expo start`** from this folder. **EAS cloud builds** do not read those files unless you explicitly load them in CI; they use **`eas.json`** `env` and any **Expo dashboard → Environment variables** for the profile. If TestFlight shows a different API URL or login path than your simulator, compare Profile in the app with your `eas.json` / dashboard values.
 - For **staging / real MoveConcept**, set `EXPO_PUBLIC_USE_MOCK_API=false` and `EXPO_PUBLIC_API_BASE_URL` (no trailing slash). Auth defaults are **`/api/auth/login`**, **`/api/auth/me`**, **`/api/auth/logout`**. The **owner activities list** defaults to **`/api/users/me/activities`** — **`/api/auth/users/me/activities`** returns **404** on MoveConcept; do not use **`/api/login`** for email auth (404); `src/config/env.ts` normalizes legacy `/api/login` to `/api/auth/login`.
-- **Google sign-in (live API):** set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` plus **`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`** on iOS or **`EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`** on Android. The app opens the system browser (`expo-auth-session`), then **POST**s the Google token to **`/api/auth/login/social/google`** as `accessToken` (see OpenAPI `LoginViaSocialRequest`). For **Expo Go**, add redirect URI `https://auth.expo.io/@YOUR_EXPO_USERNAME/mccheck` to the Google **Web** client (see `.env.example`). **Android:** EAS keystore + SHA-1 + Google Cloud Android OAuth — step-by-step [../docs/mcheck-android-google-oauth-setup.md](../docs/mcheck-android-google-oauth-setup.md).
+- **Google sign-in (live API):** set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` plus **`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`** and **`EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`**. Uses **`@react-native-google-signin/google-signin`** (not Expo Go — use an **EAS `preview` / `development` / `production` build**). **POST**s the token to **`/api/auth/login/social/google`** as `accessToken` (see OpenAPI `LoginViaSocialRequest`). **Setup:** [../docs/mcheck-android-google-oauth-setup.md](../docs/mcheck-android-google-oauth-setup.md) (Android SHA-1, iOS `iosUrlScheme` in `app.json`).
 - If your backend auth routes genuinely differ, override:
   - `EXPO_PUBLIC_AUTH_LOGIN_PATH`
   - `EXPO_PUBLIC_AUTH_ME_PATH`
@@ -95,6 +105,38 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 - **EAS builds:** `eas.json` sets **`SENTRY_DISABLE_AUTO_UPLOAD=true`** so cloud builds do not require `sentry-cli` org/auth (source map upload is off; runtime crash reporting via DSN still works). To enable upload later, remove that flag and add Sentry **org**, **project**, and **`SENTRY_AUTH_TOKEN`** as EAS secrets, or set **`SENTRY_ALLOW_FAILURE=true`** if uploads may fail without failing the build.
 - **Android release builds:** `eas.json` production profile sets `android.buildType` to **`app-bundle`** for Play Console. Run `eas build --platform android --profile production` when ready (same env vars as iOS; see [../docs/mcheck-android-google-oauth-setup.md](../docs/mcheck-android-google-oauth-setup.md)).
 
+### Android USB install (APK, no Play Store)
+
+`production` Android builds are **`.aab`** (Play). To **`adb install`** over USB you need an **`.apk`** from **`preview`** or **`development`** (both set `android.buildType: "apk"` in `eas.json`).
+
+1. On the phone: **Developer options** → **USB debugging** ON; connect USB; accept the RSA prompt; use a **data** cable.
+2. On your Mac:
+
+   ```bash
+   cd mobile
+   npx eas-cli@latest build --platform android --profile preview
+   ```
+
+3. When the build finishes, open the **Expo dashboard** link from the CLI. Either **scan the install QR** on that page on your phone, or **Download** the **`.apk`** (e.g. to `~/Downloads/`) and install with `adb` below.
+4. If using `adb`, install with the **real** path to the downloaded file (not a placeholder):
+
+   ```bash
+   adb devices
+   adb install -r "/Users/YOU/Downloads/whatever-the-file-is-called.apk"
+   ```
+
+   **Tip:** In Finder, select the `.apk` → **Option**-right-click → **Copy “… ” as Pathname**, then paste after `adb install -r `.
+
+   If `adb` says **no devices**, fix USB/cable first. If **`failed to stat`**, you used a fake path or the file is not there — list APKs with:
+
+   ```bash
+   find "$HOME/Downloads" -maxdepth 1 -iname "*.apk" -print
+   ```
+
+   (Install [Google Platform Tools](https://developer.android.com/tools/releases/platform-tools) if `adb` is not found.)
+
+   **EAS upload failed** with `git config core.ignorecase` or tarball errors? Run the same `eas build` command **on your Mac terminal** (outside restricted CI sandboxes); ensure the repo is a normal git checkout.
+
 ## Layout
 
 | Path | Role |
@@ -102,7 +144,8 @@ See [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md): default **mock API**
 | `src/api/` | Types, mock + real clients (`createActivitiesApi`), `real/mappers.ts` |
 | `src/config/env.ts` | `EXPO_PUBLIC_*` flags |
 | `src/context/AuthContext.tsx` | Token storage (SecureStore), email + Google exchange |
-| `src/auth/GoogleSignInButton.tsx` | Google OAuth prompt + MoveConcept social login |
+| `src/auth/GoogleSignInButton.tsx` | Native Google Sign-In + MoveConcept social login |
+| `src/auth/nativeGoogleSignIn.ts` | `GoogleSignin.configure` / `signIn` / `getTokens` |
 | `src/lib/isActiveEvent.ts` | Upcoming / ongoing filter |
 | `src/navigation/` | Stack navigator |
 | `src/screens/` | Login, Active events, Detail, Guest list, Profile |

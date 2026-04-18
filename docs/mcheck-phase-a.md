@@ -4,19 +4,19 @@ Phase A locks the mobile client for **daily development with mocks** and optiona
 
 ## Current team focus
 
-We are **prioritizing Phase A** next: ship small UI/client fixes from **mock-mode** QA before expanding scope. Practically:
+**V1 iOS** is signed off (2026-04-17). Phase A stays the **default regression harness** for ongoing work: mock-mode QA catches UI/client breaks without staging.
 
-1. In `mobile/`, use **mocks** for daily work: omit `EXPO_PUBLIC_USE_MOCK_API` or set it to `true` in `.env.local` (staging `false` is for explicit integration / TestFlight).
-2. Run the **Manual QA script** below on simulator.
-3. Run each **`EXPO_PUBLIC_MOCK_SCENARIO`** row once; fix regressions.
+1. In `mobile/`, use **mocks** for daily work: omit `EXPO_PUBLIC_USE_MOCK_API` or set it to `true` in `.env.local` (staging `false` is for explicit integration / TestFlight / Android device checks).
+2. Run the **Manual QA script** below on simulator when you touch UI, navigation, or API mappers.
+3. Run each **`EXPO_PUBLIC_MOCK_SCENARIO`** row after relevant changes; fix regressions.
 4. Keep CI green (`npm test`, `npm run typecheck` from `mobile/`).
 
-When Phase A is stable, run **staging smoke** ([staging-runbook.md](./staging-runbook.md)) before tagging a release build.
+Before **any** store-track or wide tester build (iOS or Android), run **staging smoke** ([staging-runbook.md](./staging-runbook.md)).
 
 ## Defaults
 
 - **Daily development:** use **mock API** (`EXPO_PUBLIC_USE_MOCK_API` not `false`, or omit). No network required.
-- **Staging integration:** set real `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_USE_MOCK_API=false`, restart Expo with cache clear. See [mcheck-implementation-plan.md](./mcheck-implementation-plan.md) Phase 2 kickoff.
+- **Staging integration:** set real `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_USE_MOCK_API=false`, restart Metro with cache clear when using **simulator + `expo run`**. On a **physical device**, **live Google** requires an **EAS native build** (Expo Go does not ship `@react-native-google-signin/google-signin`). See [mcheck-implementation-plan.md](./mcheck-implementation-plan.md) Phase 2 kickoff and [../mobile/README.md](../mobile/README.md).
 
 ## Manual QA script (~5 minutes)
 
@@ -63,7 +63,7 @@ With **mock API** enabled, set **`EXPO_PUBLIC_MOCK_SCENARIO`** in `.env` / `.env
 ## Related (pre-staging)
 
 - [staging-runbook.md](./staging-runbook.md) — first live API integration and smoke test.
-- [mcheck-google-oauth-notes.md](./mcheck-google-oauth-notes.md) — Google sign-in (Expo + MoveConcept).
+- [mcheck-google-oauth-notes.md](./mcheck-google-oauth-notes.md) — native Google Sign-In + MoveConcept contract.
 - [mcheck-store-release-checklist.md](./mcheck-store-release-checklist.md) — TestFlight / Play internal / store prep.
 
 **CI:** on push/PR touching `mobile/`, GitHub Actions runs `npm run typecheck` and `npm test` (see `.github/workflows/mobile-ci.yml`).
@@ -79,3 +79,5 @@ With **mock API** enabled, set **`EXPO_PUBLIC_MOCK_SCENARIO`** in `.env` / `.env
 | 1.4 | 2026-04-16 | Clarify mocks vs staging; OAuth doc is implementation guide |
 | 1.5 | 2026-04-16 | **Current team focus** — prioritize Phase A before next release spike |
 | 1.6 | 2026-04-16 | Profile `/me` field parity + cold-start refresh; guest list empty vs error UX; optional Sentry init when DSN + non-dev + SDK installed; EAS production `android.buildType` |
+| 1.7 | 2026-04-17 | **V1 iOS signed off;** Phase A reframed as ongoing regression + pre-release staging smoke |
+| 1.8 | 2026-04-18 | Staging vs Expo Go vs EAS native build; Google doc link text |

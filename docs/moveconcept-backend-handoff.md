@@ -2,7 +2,7 @@
 
 **Audience:** McCheck mobile and anyone integrating with the MoveConcept REST API.
 
-**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API (exported from **staging**, synced 2026-04-16). It is the canonical contract for the routes McCheck V1 targets. **McCheck iOS** exercises this contract on staging and TestFlight (email + Google social login verified as of 2026-04-16).
+**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API (exported from **staging**, synced 2026-04-16). It is the canonical contract for the routes McCheck V1 targets. **McCheck iOS** exercises this contract on staging and TestFlight; **V1 iOS organizer path signed off 2026-04-17**. **Android:** use **EAS `preview` APK** (QR on the Expo build page) or Play **Internal testing** for the same smoke; **Expo Go** does not run native Google Sign-In.
 
 **Bases:** See `servers` in the JSON — production `https://moveconcept.cz/api` and staging `https://staging.moveconcept.cz/api`.
 
@@ -27,7 +27,8 @@ Implementers should read field-level detail in **`api-docs.json`** (`components.
 ## Outside the OpenAPI file
 
 - **Authorization:** **`GET …/registrations`** is **owner-only** in **production** (MoveConcept, confirmed 2026-04-16). Re-verify on **staging** after backend deploys if policies diverge (see [mcheck-design-vs-backend.md](./mcheck-design-vs-backend.md)).
-- **Google mobile:** The documented exchange uses **`accessToken`** (token from the social provider as the API expects). Align the native client with that contract; do not assume a separate `POST /auth/google` or `idToken`-only body unless the server is changed and the spec updated.
+- **Google mobile:** McCheck uses **`@react-native-google-signin/google-signin`** and **`POST …/login/social/google`** with body field **`accessToken`** (string from **`getTokens()`** — OAuth access token first, **id token** fallback). Align server verification with that; do not assume a separate `POST /auth/google` unless the server is changed and the spec updated.
+- **User notifications (organizer join/cancel):** MoveConcept exposes **`GET /users/{user}/notifications`** (paginated), **`GET …/notifications/unread-count`**, **`POST …/notifications/mark-all-read`**, **`PATCH …/notifications/{notification}/mark-read`** (Sanctum). The web uses these for in-app alerts when someone registers or cancels on **your** activity. **These paths may not appear in every `api-docs.json` export** — confirm in staging or refresh the snapshot when McCheck implements an inbox. **Delivery channel today is `database` only** (not FCM/APNs); McCheck can still use the same API for **in-app** notifications, which is good preparation for **push** once the backend adds device tokens and a push channel. See [mcheck-implementation-plan.md](./mcheck-implementation-plan.md) (section *Organizer notifications — in-app first, push later*).
 
 ---
 
@@ -46,3 +47,6 @@ Versions **1.0–2.0** of this document listed blocking backend requests before 
 | 3.0 | 2026-04-16 | Coordination doc; OpenAPI synced to MoveConcept staging export |
 | 3.1 | 2026-04-16 | Note: mobile staging + TestFlight auth (email + Google) verified against live API |
 | 3.2 | 2026-04-16 | **Recorded:** `GET …/registrations` is **owner-only** in production (403 for non-owner) |
+| 3.3 | 2026-04-16 | **User notifications API:** index / unread / mark-read; OpenAPI may omit; `database` channel vs push; pointer to implementation plan |
+| 3.4 | 2026-04-17 | **V1 iOS** sign-off called out; Android smoke pending Play |
+| 3.5 | 2026-04-18 | Android: EAS preview APK / QR; native Google client; Expo Go caveat |

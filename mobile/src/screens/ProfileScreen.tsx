@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   API_BASE_URL,
   AUTH_LOGIN_PATH,
@@ -32,7 +32,11 @@ export function ProfileScreen(_props: Props) {
   const { user, token, signOut } = useAuth();
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.hero}>
         <Text accessibilityRole="header" style={styles.heroTitle}>
           Profile
@@ -92,12 +96,13 @@ export function ProfileScreen(_props: Props) {
       >
         <Text style={styles.signOutText}>Sign out</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface, padding: space.lg },
+  container: { flex: 1, backgroundColor: colors.surface },
+  content: { padding: space.lg, paddingBottom: space.xxl },
   hero: { marginBottom: space.lg },
   heroTitle: {
     fontSize: type.titleMd,

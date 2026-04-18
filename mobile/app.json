@@ -34,8 +34,13 @@
     },
     "plugins": [
       "expo-secure-store",
-      "expo-web-browser",
-      "@sentry/react-native"
+      "@sentry/react-native",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.38760719140-ddf4691ik5ore64ni2pgieh1o676id7f"
+        }
+      ]
     ],
     "extra": {
       "eas": {

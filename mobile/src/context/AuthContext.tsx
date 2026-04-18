@@ -21,6 +21,7 @@ import {
   USE_MOCK_API,
 } from '../config/env';
 import { getMockScenario } from '../config/mockScenario';
+import { signOutGoogleSession } from '../auth/nativeGoogleSignIn';
 import { parseMeApiResponse, placeholderAuthUser, type AuthUser } from '../auth/sessionUser';
 
 export type { AuthUser } from '../auth/sessionUser';
@@ -135,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser({ ...placeholderAuthUser(email), displayName: 'Organizer' });
       return;
     }
-    throw new Error('Use the Google button flow (OAuth) when not in mock mode.');
+    throw new Error('Use the Google button flow when not in mock mode.');
   }, []);
 
   const exchangeGoogleAccessToken = useCallback(async (googleCredential: string) => {
@@ -195,6 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.deleteItemAsync(USER_EMAIL_KEY);
     setToken(null);
     setUser(null);
+    await signOutGoogleSession();
   }, [token]);
 
   const value = useMemo(

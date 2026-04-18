@@ -65,7 +65,7 @@ export const GOOGLE_WEB_CLIENT_ID = googleWeb;
 export const GOOGLE_IOS_CLIENT_ID = googleIos;
 export const GOOGLE_ANDROID_CLIENT_ID = googleAndroid;
 
-/** Native Google OAuth via `expo-auth-session` needs platform OAuth client IDs + web client ID (Android / token exchange). */
+/** Native Google Sign-In needs Web + iOS/Android OAuth client IDs in Google Cloud (see docs). */
 export function isGoogleLoginConfigured(): boolean {
   if (!googleWeb) return false;
   if (Platform.OS === 'ios') return Boolean(googleIos);

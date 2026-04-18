@@ -11,11 +11,12 @@
 
 ## 1. Executive summary
 
-**Build status (2026-04-09):**
+**Build status (2026-04-17):**
 
-- McCheck mobile UI scaffold for organizer V1 is implemented and QA-checked on simulator (login, active events, detail, guest list, profile).
+- McCheck mobile **organizer V1** is implemented; **iOS** path verified on **TestFlight / device** (login, active events, detail, guest list, profile, logout) — **signed off**.
+- **Android:** same client; store distribution pending **Google Play Console** verification and **`eas submit`** (service account JSON); use **`preview` EAS APK** (install QR on the Expo build page) or **`adb install`** for device QA until then — **not** Expo Go for Google.
 - Stitch visual direction is translated into a native token system and polished screen layouts.
-- Remaining delivery risk is primarily **backend contract + authorization**, not client UI readiness.
+- Remaining delivery risk for **new platforms** is **Play onboarding + OAuth device config**; core API contract for V1 is exercised on iOS against staging.
 
 | Area | Mobile / UI | Backend today |
 |------|-------------|----------------|
@@ -249,3 +250,5 @@ Use this as a living checklist (copy into Issues/Projects as needed).
 | 1.4 | 2026-04-16 | Corrected my-activities path: `/api/users/me/activities` (not under `/api/auth/users/…`) |
 | 1.5 | 2026-04-14 | Removed stale web-login/attendees assumptions; clarified staging parity and registrations wording |
 | 1.6 | 2026-04-16 | **Confirmed:** registrations list endpoint is **owner-only** in production (403 for non-owner) |
+| 1.7 | 2026-04-17 | **V1 iOS** sign-off; Android pending Play + submit |
+| 1.8 | 2026-04-18 | Android QA: EAS preview APK / install QR; not Expo Go for Google |
