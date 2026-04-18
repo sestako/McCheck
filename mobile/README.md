@@ -27,6 +27,7 @@ If **`npx expo start`** asks to install a different major (e.g. `expo@55`), answ
 1. From `mobile/`: **`npx expo prebuild --platform ios`** (creates `ios/` if missing), then **`cd ios && pod install`**.
 2. Open **`ios/mobile.xcworkspace`** in Xcode (not the `.xcodeproj` alone).
 3. **`ios/.xcode.env`** sets **`SENTRY_DISABLE_AUTO_UPLOAD=true`** so builds succeed without `SENTRY_ORG` / Sentry auth (local dev). For **EAS** or release uploads, configure Sentry in the Expo plugin / env as usual.
+4. **Debug builds load JS from Metro** (`http://localhost:8081`). Before **Run** in Xcode, start the packager in another terminal: **`cd mobile && npm start`** (or `npx expo start`). If you see **“Could not connect to the server”** / **“No script URL provided”**, Metro is not running or not reachable. **Physical devices** cannot use `localhost` for your Mac — use **`npx expo run:ios --device`** (sets packager host) or a **Release** build with an embedded bundle.
 
 ## Tests & typecheck
 
