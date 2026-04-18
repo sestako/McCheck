@@ -33,12 +33,16 @@ type AuthContextValue = {
   ready: boolean;
   token: string | null;
   user: AuthUser | null;
+  /** True while `GET /auth/me` refresh is in flight (e.g. pull-to-refresh on Settings). */
+  profileRefreshing: boolean;
   activitiesApi: ActivitiesApi;
   signInWithEmail: (email: string, _password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   /** Exchange a Google OAuth access token (or ID token if that is what the server verifies) for a MoveConcept API token. */
   exchangeGoogleAccessToken: (googleCredential: string) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Re-fetch profile from the API (no-op without a token; mock mode resets placeholder from stored email). */
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -47,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [profileRefreshing, setProfileRefreshing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -199,26 +204,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOutGoogleSession();
   }, [token]);
 
+  const refreshProfile = useCallback(async () => {
+    if (!token) return;
+    setProfileRefreshing(true);
+    try {
+      if (USE_MOCK_API) {
+        const email = await SecureStore.getItemAsync(USER_EMAIL_KEY);
+        if (email) setUser(placeholderAuthUser(email));
+        return;
+      }
+      const me = await fetchMeWithToken(token);
+      setUser(me);
+    } catch {
+      /* keep existing user */
+    } finally {
+      setProfileRefreshing(false);
+    }
+  }, [token]);
+
   const value = useMemo(
     () => ({
       ready,
       token,
       user,
+      profileRefreshing,
       activitiesApi,
       signInWithEmail,
       signInWithGoogle,
       exchangeGoogleAccessToken,
       signOut,
+      refreshProfile,
     }),
     [
       ready,
       token,
       user,
+      profileRefreshing,
       activitiesApi,
       signInWithEmail,
       signInWithGoogle,
       exchangeGoogleAccessToken,
       signOut,
+      refreshProfile,
     ]
   );
 

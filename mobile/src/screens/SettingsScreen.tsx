@@ -1,502 +1,395 @@
-/**
- * Settings (product Stitch #10): account from GET /me + Connection (env) + sign out.
- * Colors / radii: McCheck Stitch MCP `list_projects` designTheme (ROUND_EIGHT → 8px cards).
- * Note: MCP `list_screens` has no frame titled “Settings”; staff UI stays out of V1.
- */
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import React, { useMemo, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useCallback, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import {
-  API_BASE_URL,
-  AUTH_LOGIN_PATH,
-  AUTH_LOGOUT_PATH,
-  AUTH_ME_PATH,
-  MY_ACTIVITIES_LIST_PATH,
-  USE_MOCK_API,
-} from '../config/env';
-import { useAuth } from '../context/AuthContext';
-import { liveApiTroubleshootingHint } from '../lib/apiErrors';
-import type { MainTabParamList } from '../navigation/types';
-import { colors, radius, space, type } from '../theme/tokens';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type Props = BottomTabScreenProps<MainTabParamList, 'Settings'>;
+import { API_BASE_URL, USE_MOCK_API } from '../config/env';
+import { useAuth } from '../context/AuthContext';
+import { colors, space, type as typeScale } from '../theme/tokens';
+
+/** Profile & Staff Stitch HTML — body / cards / ring / logout (HTML wins over DESIGN.md on this screen). */
+const STITCH = {
+  bodyBg: '#F7F9FB',
+  sectionCard: '#F1F3F5',
+  ring: '#10413B',
+  onSurface: '#111827',
+  muted: '#6b7280',
+  mutedLight: '#9ca3af',
+  rowIcon: '#6b7280',
+  divider: 'rgba(229, 231, 235, 0.5)',
+  logoutBg: '#FFE9E9',
+  logoutFg: '#E53E3E',
+  assistanceRadius: 24,
+  cardRadius: 20,
+} as const;
 
 const AVATAR_SIZE = 96;
-const hairline = StyleSheet.hairlineWidth;
-/** Stitch designTheme.roundness ROUND_EIGHT */
-const CARD_RADIUS = radius.sm;
+const RING_WIDTH = 3;
+const RING_PADDING = 4;
 
-function formatSettingsInstant(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+function StitchSectionHeader({ title }: { title: string }) {
+  return <Text style={styles.sectionTitle}>{title}</Text>;
 }
 
-function avatarInitial(displayName: string): string {
-  const t = displayName.trim();
-  return (t.slice(0, 1) || '?').toUpperCase();
-}
-
-type StackRow = { key: string; label: string; value: string; mono?: boolean; multiline?: boolean };
-
-const ABOUT_COLLAPSE_THRESHOLD = 4;
-
-export function SettingsScreen(_props: Props) {
-  const { user, token, signOut } = useAuth();
-  const displayName = user?.displayName ?? '—';
-  const photoUri = user?.profilePhotoUrl?.trim() ? user.profilePhotoUrl : null;
-
-  const aboutRows = useMemo((): StackRow[] => {
-    if (!user) return [];
-    const rows: StackRow[] = [];
-    if (user.id != null) rows.push({ key: 'id', label: 'User ID', value: String(user.id), mono: true });
-    if (user.username) rows.push({ key: 'username', label: 'Username', value: user.username, mono: true });
-    if (user.fullName) rows.push({ key: 'fullName', label: 'Full name', value: user.fullName });
-    if ((user.firstName || user.lastName) && !user.fullName) {
-      rows.push({
-        key: 'name',
-        label: 'Name',
-        value: [user.firstName, user.lastName].filter(Boolean).join(' '),
-      });
-    }
-    if (user.phone) rows.push({ key: 'phone', label: 'Phone', value: user.phone });
-    if (user.bio) rows.push({ key: 'bio', label: 'Bio', value: user.bio, multiline: true });
-    if (user.createdAt) rows.push({ key: 'created', label: 'Member since', value: formatSettingsInstant(user.createdAt) });
-    if (user.updatedAt) rows.push({ key: 'updated', label: 'Profile updated', value: formatSettingsInstant(user.updatedAt) });
-    if (user.hasGoogleAuth != null) {
-      rows.push({ key: 'google', label: 'Google linked', value: user.hasGoogleAuth ? 'Yes' : 'No' });
-    }
-    return rows;
-  }, [user]);
-
-  const [aboutOpen, setAboutOpen] = useState(() => aboutRows.length <= ABOUT_COLLAPSE_THRESHOLD);
-
-  const connectionRows = useMemo(
-    (): StackRow[] => [
-      { key: 'mode', label: 'Mode', value: USE_MOCK_API ? 'Mock API' : 'Live API' },
-      { key: 'base', label: 'Base URL', value: API_BASE_URL, mono: true },
-      { key: 'login', label: 'Login path', value: AUTH_LOGIN_PATH, mono: true },
-      { key: 'me', label: 'Me path', value: AUTH_ME_PATH, mono: true },
-      { key: 'logout', label: 'Logout path', value: AUTH_LOGOUT_PATH, mono: true },
-      { key: 'activities', label: 'My activities path', value: MY_ACTIVITIES_LIST_PATH, mono: true },
-      { key: 'token', label: 'Token in session', value: token ? 'Yes' : 'No' },
-    ],
-    [token]
+function StitchRow({
+  icon,
+  label,
+  value,
+  valueMultiline,
+  isLast,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value?: string;
+  valueMultiline?: string;
+  isLast?: boolean;
+}) {
+  return (
+    <View style={[styles.stitchRow, !isLast && styles.stitchRowDivider]}>
+      <View style={styles.stitchRowMain}>
+        <View style={styles.stitchRowLeft}>
+          <Ionicons name={icon} size={22} color={STITCH.rowIcon} />
+          <Text style={styles.stitchRowLabel}>{label}</Text>
+        </View>
+        {value != null && value !== '' && !valueMultiline ? (
+          <Text style={styles.stitchRowValue} numberOfLines={2}>
+            {value}
+          </Text>
+        ) : null}
+      </View>
+      {valueMultiline != null && valueMultiline !== '' ? (
+        <Text style={styles.stitchRowBio}>{valueMultiline}</Text>
+      ) : null}
+    </View>
   );
+}
 
-  const showAboutToggle = aboutRows.length > ABOUT_COLLAPSE_THRESHOLD;
-  const visibleAboutRows = showAboutToggle && !aboutOpen ? [] : aboutRows;
+export function SettingsScreen() {
+  const insets = useSafeAreaInsets();
+  const { user, signOut, refreshProfile, profileRefreshing } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
+
+  const onSignOut = useCallback(async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Sign out failed';
+      Alert.alert('Sign out failed', message);
+    } finally {
+      setSigningOut(false);
+    }
+  }, [signOut]);
+
+  const confirmSignOut = useCallback(() => {
+    Alert.alert('Sign out?', 'You will need to sign in again to use the app.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign out', style: 'destructive', onPress: () => void onSignOut() },
+    ]);
+  }, [onSignOut]);
+
+  const me = user;
+  const displayName = me?.fullName?.trim() || me?.displayName?.trim() || 'Signed in';
+  const email = me?.email?.trim() ?? '';
+  const username = me?.username?.trim();
+  const subtitle = email;
+
+  const avatarUrl = useMemo(() => {
+    const raw = me?.profilePhotoUrl?.trim();
+    if (!raw) return null;
+    return raw;
+  }, [me?.profilePhotoUrl]);
+
+  const tokenSourceLabel = USE_MOCK_API ? 'Mock session' : 'API bearer token';
+
+  const apiBase = API_BASE_URL || '(not set)';
+  const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL?.trim();
+  const stagingHint =
+    process.env.EXPO_PUBLIC_STAGING === '1' || __DEV__
+      ? 'Staging / dev: live updates use polling when the socket URL is not configured.'
+      : null;
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
+      style={[styles.scroll, { paddingTop: insets.top + space.md }]}
+      contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
+      refreshControl={
+        <RefreshControl
+          refreshing={profileRefreshing}
+          onRefresh={() => void refreshProfile()}
+          tintColor={colors.primary}
+        />
+      }
     >
-      <View
-        style={styles.hero}
-        accessible
-        accessibilityRole="header"
-        accessibilityLabel="Settings. Your profile and how this device connects to MoveConcept."
-      >
-        <Text style={styles.heroEyebrow}>Settings</Text>
-        <Text style={styles.heroSubtitle}>Your profile and how this device talks to MoveConcept.</Text>
-      </View>
-
-      <View style={styles.identityCard}>
-        {photoUri ? (
-          <Image
-            accessibilityIgnoresInvertColors
-            accessibilityLabel={`Profile photo for ${displayName}`}
-            source={{ uri: photoUri }}
-            style={styles.avatarImage}
-          />
-        ) : (
-          <View
-            style={styles.avatarPlaceholder}
-            accessibilityRole="image"
-            accessibilityLabel={`Avatar for ${displayName}`}
-          >
-            <Text style={styles.avatarInitial}>{avatarInitial(displayName)}</Text>
-          </View>
-        )}
-        <Text style={styles.identityName} numberOfLines={2}>
-          {displayName}
-        </Text>
-        {user?.email ? (
-          <Text style={styles.identityEmail} numberOfLines={2}>
-            {user.email}
-          </Text>
-        ) : null}
-        {user?.username ? (
-          <Text style={styles.identityTertiary} numberOfLines={1}>
-            @{user.username}
-          </Text>
-        ) : null}
-      </View>
-
-      {aboutRows.length > 0 ? (
-        <View style={styles.sectionWrap}>
-          {showAboutToggle ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded: aboutOpen }}
-              accessibilityLabel={aboutOpen ? 'Collapse about you' : 'Expand about you'}
-              onPress={() => setAboutOpen((o) => !o)}
-              style={({ pressed }) => [styles.aboutToggle, pressed && styles.aboutTogglePressed]}
-            >
-              <Text style={styles.sectionEyebrow}>About you</Text>
-              <Text style={styles.aboutChevron} accessibilityElementsHidden importantForAccessibility="no">
-                {aboutOpen ? '▼' : '▶'}
-              </Text>
-            </Pressable>
+      {/* Profile block (Stitch: centered avatar, name, role line — no staff / no Edit profile). */}
+      <View style={styles.profileBlock}>
+        <View
+          style={[
+            styles.avatarRing,
+            {
+              width: AVATAR_SIZE + 2 * (RING_PADDING + RING_WIDTH),
+              height: AVATAR_SIZE + 2 * (RING_PADDING + RING_WIDTH),
+              borderRadius: (AVATAR_SIZE + 2 * (RING_PADDING + RING_WIDTH)) / 2,
+            },
+          ]}
+        >
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={styles.avatar} accessibilityLabel="Profile photo" />
           ) : (
-            <Text style={styles.sectionEyebrowStatic}>About you</Text>
+            <View style={[styles.avatar, styles.avatarPlaceholder]} accessibilityLabel="No photo">
+              <Ionicons name="person" size={44} color={STITCH.mutedLight} />
+            </View>
           )}
-          {visibleAboutRows.length > 0 ? (
-            <View style={styles.groupedCard}>
-              {visibleAboutRows.map((row, i) => (
-                <View
-                  key={row.key}
-                  style={[styles.groupedRowPad, i < visibleAboutRows.length - 1 && styles.groupedRowBorder]}
-                >
-                  {row.multiline ? (
-                    <>
-                      <Text style={styles.groupedLabel}>{row.label}</Text>
-                      <Text
-                        style={[styles.groupedValue, styles.groupedValueMultiline, row.mono && styles.mono]}
-                      >
-                        {row.value}
-                      </Text>
-                    </>
-                  ) : (
-                    <View style={styles.rowInline}>
-                      <Text style={styles.groupedLabelInline}>{row.label}</Text>
-                      <Text
-                        style={[styles.groupedValueInline, row.mono && styles.mono]}
-                        numberOfLines={3}
-                        ellipsizeMode="tail"
-                      >
-                        {row.value}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              ))}
-            </View>
-          ) : null}
         </View>
-      ) : null}
+        <Text style={styles.profileName}>{displayName}</Text>
+        {subtitle ? <Text style={styles.profileSubtitle}>{subtitle}</Text> : null}
+        {username ? <Text style={styles.profileUsername}>@{username}</Text> : null}
 
-      <View style={styles.sectionWrap}>
-        <Text style={styles.diagnosticsEyebrow}>Connection</Text>
-        <Text style={styles.diagnosticsHint}>Environment and API paths (read-only).</Text>
-        <View style={styles.diagnosticsCard}>
-          {connectionRows.map((row, i) => (
-            <View
-              key={row.key}
-              style={[styles.diagnosticsRow, i < connectionRows.length - 1 && styles.diagnosticsRowBorder]}
-            >
-              <Text style={styles.diagnosticsLabel}>{row.label}</Text>
-              <Text
-                style={[styles.diagnosticsValue, row.mono && styles.diagnosticsMono]}
-                numberOfLines={4}
-                ellipsizeMode="tail"
-              >
-                {row.value}
-              </Text>
-            </View>
-          ))}
-          {!USE_MOCK_API ? (
-            <Text style={styles.liveHint}>{liveApiTroubleshootingHint()}</Text>
-          ) : null}
-        </View>
-      </View>
-
-      <View style={styles.dangerZone}>
-        <Text style={styles.dangerEyebrow}>Account actions</Text>
         <Pressable
+          onPress={confirmSignOut}
+          disabled={signingOut}
+          style={({ pressed }) => [
+            styles.logoutBtn,
+            pressed && styles.pressed,
+            signingOut && styles.disabled,
+          ]}
           accessibilityRole="button"
           accessibilityLabel="Sign out"
-          style={({ pressed }) => [styles.signOutMinimal, pressed && styles.signOutPressed]}
-          onPress={() => {
-            Alert.alert('Sign out?', 'You will need to sign in again to manage events.', [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Sign out',
-                style: 'destructive',
-                onPress: () => {
-                  void signOut();
-                },
-              },
-            ]);
-          }}
         >
-          <Text style={styles.signOutText}>Sign out</Text>
+          {signingOut ? (
+            <ActivityIndicator color={STITCH.logoutFg} />
+          ) : (
+            <>
+              <Ionicons name="log-out-outline" size={20} color={STITCH.logoutFg} />
+              <Text style={styles.logoutBtnText}>Sign out</Text>
+            </>
+          )}
         </Pressable>
       </View>
+
+      {!me ? (
+        <View style={styles.centerBlock}>
+          <ActivityIndicator color={colors.primary} />
+          <Text style={styles.muted}>Loading profile…</Text>
+        </View>
+      ) : (
+        <>
+          <View style={styles.sectionWrap}>
+            <StitchSectionHeader title="About you" />
+            <View style={styles.sectionCard}>
+              <StitchRow
+                icon="person-outline"
+                label="Name"
+                value={me.fullName?.trim() || me.displayName?.trim() || '—'}
+              />
+              <StitchRow icon="mail-outline" label="Email" value={me.email?.trim() || '—'} />
+              <StitchRow icon="at-outline" label="Username" value={me.username?.trim() || '—'} />
+              <StitchRow
+                icon="document-text-outline"
+                label="About"
+                valueMultiline={me.bio?.trim() || '—'}
+                isLast
+              />
+            </View>
+          </View>
+
+          {/* Assistance-style block from HTML (`rounded-[24px]`, padded). */}
+          <View style={styles.connectionAssistance}>
+            <Text style={styles.assistanceTitle}>Connection</Text>
+            <Text style={styles.assistanceBody}>
+              Environment and API paths. Read-only; configure in env before build.
+            </Text>
+            <View style={[styles.sectionCard, styles.connectionCardInner]}>
+              <StitchRow icon="globe-outline" label="Environment" value={__DEV__ ? 'Development' : 'Production'} />
+              <StitchRow icon="link-outline" label="API base" value={apiBase} />
+              {webAppUrl ? (
+                <StitchRow icon="compass-outline" label="Web app" value={webAppUrl} />
+              ) : null}
+              <StitchRow icon="key-outline" label="Token" value={tokenSourceLabel} />
+              <StitchRow
+                icon="pulse-outline"
+                label="Live updates"
+                value={stagingHint ? 'Polling' : 'Default'}
+                isLast
+              />
+            </View>
+            {stagingHint ? <Text style={styles.liveHint}>{stagingHint}</Text> : null}
+          </View>
+        </>
+      )}
+
+      <View style={{ height: insets.bottom + space.xl }} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface },
-  content: { paddingHorizontal: space.lg, paddingTop: space.md, paddingBottom: space.xxl * 2 },
-  hero: { marginBottom: space.xl, paddingRight: space.sm },
-  heroEyebrow: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.surfaceContainerLow,
-    color: colors.onSurfaceVariant,
-    paddingHorizontal: space.md,
-    paddingVertical: space.xs,
-    borderRadius: 999,
-    fontSize: type.labelXs,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+  scroll: {
+    flex: 1,
+    backgroundColor: STITCH.bodyBg,
   },
-  heroSubtitle: {
-    marginTop: space.md,
-    fontSize: type.bodyMd,
-    lineHeight: 22,
-    color: colors.onSurfaceVariant,
-  },
-  identityCard: {
-    alignItems: 'center',
-    backgroundColor: colors.surfaceContainerLowest,
-    borderWidth: 1,
-    borderColor: colors.outlineSoft,
-    borderRadius: CARD_RADIUS,
-    paddingVertical: space.xl,
+  scrollContent: {
     paddingHorizontal: space.lg,
-    marginBottom: space.xl,
+    paddingBottom: space.xl,
   },
-  avatarImage: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: colors.surfaceContainerLow,
-    borderWidth: 3,
-    borderColor: colors.secondaryContainer,
+  pressed: {
+    opacity: 0.85,
   },
-  avatarPlaceholder: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: colors.secondaryContainer,
-    borderWidth: 1,
-    borderColor: colors.outlineSoft,
+  disabled: {
+    opacity: 0.6,
+  },
+  profileBlock: {
+    alignItems: 'center',
+    marginTop: space.sm,
+  },
+  avatarRing: {
+    borderWidth: RING_WIDTH,
+    borderColor: STITCH.ring,
+    padding: RING_PADDING,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarInitial: {
-    fontSize: type.titleLg,
-    fontWeight: '700',
-    color: colors.primary,
+  avatar: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    backgroundColor: STITCH.sectionCard,
   },
-  identityName: {
+  avatarPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileName: {
     marginTop: space.md,
-    fontSize: type.titleSm,
+    fontSize: typeScale.titleMd,
     fontWeight: '700',
-    color: colors.onSurface,
-    textAlign: 'center',
+    color: STITCH.onSurface,
   },
-  identityEmail: {
+  profileSubtitle: {
     marginTop: space.xs,
-    fontSize: type.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
+    fontSize: typeScale.bodyMd,
+    fontWeight: '500',
+    color: STITCH.muted,
   },
-  identityTertiary: {
-    marginTop: space.xs,
-    fontSize: type.labelSm,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-    opacity: 0.9,
+  profileUsername: {
+    marginTop: 2,
+    fontSize: typeScale.labelSm,
+    color: STITCH.muted,
   },
-  sectionWrap: { marginBottom: space.xl },
-  aboutToggle: {
+  logoutBtn: {
+    marginTop: space.lg,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.sm,
+    backgroundColor: STITCH.logoutBg,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  logoutBtnText: {
+    fontSize: typeScale.bodyMd,
+    fontWeight: '600',
+    color: STITCH.logoutFg,
+  },
+  centerBlock: {
+    alignItems: 'center',
+    paddingVertical: space.xl,
+    gap: space.sm,
+  },
+  muted: {
+    fontSize: typeScale.bodyMd,
+    color: STITCH.muted,
+  },
+  sectionWrap: {
+    marginTop: space.xl,
+  },
+  sectionTitle: {
+    fontSize: typeScale.titleSm,
+    fontWeight: '700',
+    color: STITCH.onSurface,
+    marginBottom: space.md,
+  },
+  sectionCard: {
+    backgroundColor: STITCH.sectionCard,
+    borderRadius: STITCH.cardRadius,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    overflow: 'hidden',
+  },
+  stitchRow: {
+    paddingVertical: space.md,
+  },
+  stitchRowDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: STITCH.divider,
+  },
+  stitchRowMain: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: space.sm,
-    paddingVertical: space.xs,
-    paddingHorizontal: space.xs,
-    borderRadius: CARD_RADIUS,
-  },
-  aboutTogglePressed: { opacity: 0.85, backgroundColor: colors.surfaceContainerLow },
-  aboutChevron: {
-    fontSize: type.labelSm,
-    color: colors.onSurfaceVariant,
-    marginLeft: space.md,
-  },
-  sectionEyebrow: {
-    fontSize: type.labelSm,
-    fontWeight: '700',
-    color: colors.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  sectionEyebrowStatic: {
-    fontSize: type.labelSm,
-    fontWeight: '700',
-    color: colors.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: space.sm,
-    marginLeft: space.xs,
-  },
-  groupedCard: {
-    backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: CARD_RADIUS,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    overflow: 'hidden',
-  },
-  groupedRowPad: {
-    paddingVertical: space.md,
-    paddingHorizontal: space.lg,
-  },
-  groupedRowBorder: {
-    borderBottomWidth: hairline,
-    borderBottomColor: colors.outlineVariant,
-  },
-  groupedLabel: {
-    fontSize: type.labelSm,
-    fontWeight: '600',
-    color: colors.onSurfaceVariant,
-    marginBottom: space.xxs,
-  },
-  groupedValue: {
-    fontSize: type.bodyMd,
-    color: colors.onSurface,
-    lineHeight: 22,
-  },
-  groupedValueMultiline: { lineHeight: 22 },
-  rowInline: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
     gap: space.md,
   },
-  groupedLabelInline: {
-    fontSize: type.labelSm,
-    fontWeight: '600',
-    color: colors.onSurfaceVariant,
-    width: 108,
+  stitchRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
     flexShrink: 0,
-    paddingTop: 2,
   },
-  groupedValueInline: {
+  stitchRowLabel: {
+    fontSize: typeScale.bodyMd,
+    fontWeight: '600',
+    color: STITCH.onSurface,
+  },
+  stitchRowValue: {
     flex: 1,
-    fontSize: type.bodyMd,
-    color: colors.onSurface,
+    fontSize: typeScale.bodyMd,
+    color: STITCH.muted,
     textAlign: 'right',
+  },
+  stitchRowBio: {
+    marginTop: space.sm,
+    marginLeft: 22 + space.md,
+    fontSize: typeScale.bodyMd,
+    color: STITCH.muted,
     lineHeight: 22,
   },
-  mono: { fontFamily: 'Courier', fontSize: type.bodyMd },
-  diagnosticsEyebrow: {
-    fontSize: type.labelXs,
-    fontWeight: '700',
-    color: colors.onSurfaceVariant,
-    opacity: 0.85,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: space.xs,
-    marginLeft: space.xs,
-  },
-  diagnosticsHint: {
-    fontSize: type.labelXs,
-    color: colors.onSurfaceVariant,
-    opacity: 0.8,
-    marginBottom: space.sm,
-    marginLeft: space.xs,
-    lineHeight: 16,
-  },
-  diagnosticsCard: {
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: CARD_RADIUS,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    paddingVertical: space.xs,
-    overflow: 'hidden',
-  },
-  diagnosticsRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: space.sm,
-    paddingVertical: space.sm,
-    paddingHorizontal: space.md,
-  },
-  diagnosticsRowBorder: {
-    borderBottomWidth: hairline,
-    borderBottomColor: colors.outlineVariant,
-  },
-  diagnosticsLabel: {
-    width: 100,
-    flexShrink: 0,
-    fontSize: type.labelXs,
-    fontWeight: '600',
-    color: colors.onSurfaceVariant,
-    opacity: 0.9,
-    paddingTop: 2,
-  },
-  diagnosticsValue: {
-    flex: 1,
-    fontSize: type.labelSm,
-    color: colors.onSurfaceVariant,
-    lineHeight: 18,
-    textAlign: 'right',
-  },
-  diagnosticsMono: { fontFamily: 'Courier', fontSize: type.labelXs },
-  liveHint: {
-    marginTop: space.sm,
-    marginHorizontal: space.md,
-    marginBottom: space.sm,
-    fontSize: type.labelXs,
-    color: colors.onSurfaceVariant,
-    opacity: 0.9,
-    lineHeight: 18,
-  },
-  dangerZone: {
-    marginTop: space.lg,
-    paddingTop: space.xl,
-    borderTopWidth: hairline,
-    borderTopColor: colors.outlineSoft,
-  },
-  dangerEyebrow: {
-    fontSize: type.labelSm,
-    fontWeight: '700',
-    color: colors.onSurfaceVariant,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+  connectionAssistance: {
+    marginTop: space.xl,
     marginBottom: space.md,
-    marginLeft: space.xs,
+    backgroundColor: STITCH.sectionCard,
+    borderRadius: STITCH.assistanceRadius,
+    padding: space.lg,
   },
-  signOutMinimal: {
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    paddingVertical: space.md,
-    borderRadius: CARD_RADIUS,
-    backgroundColor: 'transparent',
-  },
-  signOutPressed: { opacity: 0.75, backgroundColor: colors.surfaceContainerLow },
-  signOutText: {
-    fontSize: type.bodyLg,
+  assistanceTitle: {
+    fontSize: typeScale.bodyLg,
     fontWeight: '700',
-    color: colors.error,
+    color: STITCH.onSurface,
+  },
+  assistanceBody: {
+    marginTop: space.xs,
+    fontSize: typeScale.bodyMd,
+    color: STITCH.muted,
+    lineHeight: 22,
+  },
+  connectionCardInner: {
+    marginTop: space.md,
+  },
+  liveHint: {
+    marginTop: space.md,
+    fontSize: typeScale.labelSm,
+    color: STITCH.muted,
+    lineHeight: 18,
   },
 });
