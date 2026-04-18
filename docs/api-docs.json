@@ -293,13 +293,13 @@
                 }
             }
         },
-        "/users/me/activities": {
+        "/auth/users/me/activities": {
             "get": {
                 "tags": [
                     "User"
                 ],
                 "summary": "My activities",
-                "description": "Lists currently logged in user's activities (Sanctum bearer). Served at `/api/users/me/activities` on MoveConcept staging and production.",
+                "description": "Lists currently logged in user's activities.",
                 "operationId": "4899471515139914da2e5571ce014aac",
                 "parameters": [
                     {

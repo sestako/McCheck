@@ -2,7 +2,7 @@
 
 **Audience:** McCheck mobile and anyone integrating with the MoveConcept REST API.
 
-**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API. **Regenerate it** from the MoveConcept repo whenever you pull backend changes (see **Source repository & refreshing OpenAPI** below). Until you copy a fresh export, the JSON may lag behind `https://github.com/marek-mikula/moveconcept` `master`. **McCheck V1** is verified on **physical iOS and Android** devices against **staging** (organizer path: auth, active events, detail, guest list, profile, logout) — **iOS** signed off 2026-04-17 (TestFlight / device); **Android** signed off 2026-04-19 (EAS native APK). **Expo Go** does not run native Google Sign-In; use **EAS builds** for full smoke.
+**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API, last replaced **2026-04-19** from a current MoveConcept export (same JSON as `app:generate-api-docs`, supplied as `api-docs-spec.html`). **Regenerate** whenever you pull backend changes (see **Source repository & refreshing OpenAPI** below). **McCheck V1** is verified on **physical iOS and Android** devices against **staging** (organizer path: auth, active events, detail, guest list, profile, logout) — **iOS** signed off 2026-04-17 (TestFlight / device); **Android** signed off 2026-04-19 (EAS native APK). **Expo Go** does not run native Google Sign-In; use **EAS builds** for full smoke.
 
 **Bases:** See `servers` in the JSON — production `https://moveconcept.cz/api` and staging `https://staging.moveconcept.cz/api`.
 
@@ -58,6 +58,8 @@ Then run McCheck **typecheck/tests** and a **staging smoke** if any paths or sch
 
 Implementers should read field-level detail in **`api-docs.json`** (`components.schemas`, `components.requestBodies`, `components.responses`).
 
+**OpenAPI vs live routes:** Some exports list **“my activities”** under the path **`/auth/users/me/activities`**. The Laravel API serves the same feature at **`GET /users/me/activities`** relative to `servers[].url` (same as **`GET /api/users/me/activities`** absolute on staging/production). McCheck defaults and **`normalizeAuthPaths`** in `mobile/src/config/normalizeAuthPaths.ts` target the correct URL; fix MoveConcept OA attributes on the next backend regen if the JSON still shows the `/auth/users/…` path.
+
 ---
 
 ## Outside the OpenAPI file
@@ -88,3 +90,4 @@ Versions **1.0–2.0** of this document listed blocking backend requests before 
 | 3.5 | 2026-04-18 | Android: EAS preview APK / QR; native Google client; Expo Go caveat |
 | 3.6 | 2026-04-19 | V1 iOS + Android physical staging verification called out in purpose |
 | 3.7 | 2026-04-19 | Source repo URL, `git pull`, `sail artisan app:generate-api-docs`, copy path for `api-docs.json`; purpose notes snapshot may lag until refresh |
+| 3.8 | 2026-04-19 | `api-docs.json` refreshed from supplied export; note OA `/auth/users/me/activities` vs live `/users/me/activities` |
