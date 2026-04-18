@@ -2,9 +2,45 @@
 
 **Audience:** McCheck mobile and anyone integrating with the MoveConcept REST API.
 
-**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API (exported from **staging**, synced 2026-04-16). It is the canonical contract for the routes McCheck V1 targets. **McCheck iOS** exercises this contract on staging and TestFlight; **V1 iOS organizer path signed off 2026-04-17**. **Android:** use **EAS `preview` APK** (QR on the Expo build page) or Play **Internal testing** for the same smoke; **Expo Go** does not run native Google Sign-In.
+**Purpose:** `docs/api-docs.json` is a **checked-in OpenAPI 3.0 snapshot** of the MoveConcept public API. **Regenerate it** from the MoveConcept repo whenever you pull backend changes (see **Source repository & refreshing OpenAPI** below). Until you copy a fresh export, the JSON may lag behind `https://github.com/marek-mikula/moveconcept` `master`. **McCheck V1** is verified on **physical iOS and Android** devices against **staging** (organizer path: auth, active events, detail, guest list, profile, logout) — **iOS** signed off 2026-04-17 (TestFlight / device); **Android** signed off 2026-04-19 (EAS native APK). **Expo Go** does not run native Google Sign-In; use **EAS builds** for full smoke.
 
 **Bases:** See `servers` in the JSON — production `https://moveconcept.cz/api` and staging `https://staging.moveconcept.cz/api`.
+
+---
+
+## Source repository & refreshing OpenAPI
+
+**Canonical backend source:** [github.com/marek-mikula/moveconcept](https://github.com/marek-mikula/moveconcept) (`master` unless you agree on another branch, e.g. `staging`).
+
+**Update the local checkout** (same machine as McCheck, or your usual dev clone):
+
+```bash
+git clone https://github.com/marek-mikula/moveconcept.git   # once
+cd moveconcept
+git pull --ff-only origin master
+```
+
+**Generate OpenAPI JSON** (from MoveConcept root, with [Laravel Sail](https://laravel.com/docs/sail) and dependencies installed):
+
+```bash
+./vendor/bin/sail artisan app:generate-api-docs
+```
+
+The command scans `src/` with `zircote/swagger-php` and writes:
+
+`storage/app/private/api-docs.json`
+
+(Laravel `local` disk; see `MoveConcept\Core\Infrastructure\Console\Command\AppGenerateApiDocsCommand`.)
+
+**Copy into McCheck** (adjust paths if your repos live elsewhere):
+
+```bash
+cp /path/to/moveconcept/storage/app/private/api-docs.json /path/to/McCheck/docs/api-docs.json
+```
+
+Then run McCheck **typecheck/tests** and a **staging smoke** if any paths or schemas changed. Update the **Document control** row in this file and the “last synced” wording in the purpose paragraph above.
+
+**McCheck workspace mirror:** `SourceOfTruth_MoveConcept` is configured with `origin` = this URL; keep it on `master` (or document here if you track `staging`).
 
 ---
 
@@ -50,3 +86,5 @@ Versions **1.0–2.0** of this document listed blocking backend requests before 
 | 3.3 | 2026-04-16 | **User notifications API:** index / unread / mark-read; OpenAPI may omit; `database` channel vs push; pointer to implementation plan |
 | 3.4 | 2026-04-17 | **V1 iOS** sign-off called out; Android smoke pending Play |
 | 3.5 | 2026-04-18 | Android: EAS preview APK / QR; native Google client; Expo Go caveat |
+| 3.6 | 2026-04-19 | V1 iOS + Android physical staging verification called out in purpose |
+| 3.7 | 2026-04-19 | Source repo URL, `git pull`, `sail artisan app:generate-api-docs`, copy path for `api-docs.json`; purpose notes snapshot may lag until refresh |
