@@ -58,7 +58,7 @@ Then run McCheck **typecheck/tests** and a **staging smoke** if any paths or sch
 
 Implementers should read field-level detail in **`api-docs.json`** (`components.schemas`, `components.requestBodies`, `components.responses`).
 
-**OpenAPI vs live routes:** Some exports list **“my activities”** under the path **`/auth/users/me/activities`**. The Laravel API serves the same feature at **`GET /users/me/activities`** relative to `servers[].url` (same as **`GET /api/users/me/activities`** absolute on staging/production). McCheck defaults and **`normalizeAuthPaths`** in `mobile/src/config/normalizeAuthPaths.ts` target the correct URL; fix MoveConcept OA attributes on the next backend regen if the JSON still shows the `/auth/users/…` path.
+**My activities path:** The snapshot lists **`GET /users/me/activities`** (relative to `servers[].url`, i.e. full URL **`GET /api/users/me/activities`**). Older exports or mis-set env vars may use **`/auth/users/me/activities`**; McCheck **`normalizeAuthPaths`** in `mobile/src/config/normalizeAuthPaths.ts` still maps that legacy value to the correct path.
 
 ---
 
@@ -91,3 +91,4 @@ Versions **1.0–2.0** of this document listed blocking backend requests before 
 | 3.6 | 2026-04-19 | V1 iOS + Android physical staging verification called out in purpose |
 | 3.7 | 2026-04-19 | Source repo URL, `git pull`, `sail artisan app:generate-api-docs`, copy path for `api-docs.json`; purpose notes snapshot may lag until refresh |
 | 3.8 | 2026-04-19 | `api-docs.json` refreshed from supplied export; note OA `/auth/users/me/activities` vs live `/users/me/activities` |
+| 3.9 | 2026-04-19 | `api-docs.json`: my activities path key aligned to `/users/me/activities` (MoveConcept `ListMyActivitiesController` OA); handoff quirk shortened |
