@@ -37,6 +37,7 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# generated native folders
-/ios
+# generated native folders (track ios/.xcode.env so Xcode builds skip Sentry upload without org)
+/ios/**
+!/ios/.xcode.env
 /android

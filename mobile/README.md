@@ -22,6 +22,12 @@ Then press **`i`** (iOS simulator) or **`a`** (Android emulator). You can open t
 
 If **`npx expo start`** asks to install a different major (e.g. `expo@55`), answer **no**: run **`npm install`** in `mobile` first, then **`npm start`** so the CLI matches **SDK 54** (`expo` in `package.json`). You can also use **`npx --no-install expo start`** after `npm install` to force the local CLI.
 
+## Xcode (local iOS)
+
+1. From `mobile/`: **`npx expo prebuild --platform ios`** (creates `ios/` if missing), then **`cd ios && pod install`**.
+2. Open **`ios/mobile.xcworkspace`** in Xcode (not the `.xcodeproj` alone).
+3. **`ios/.xcode.env`** sets **`SENTRY_DISABLE_AUTO_UPLOAD=true`** so builds succeed without `SENTRY_ORG` / Sentry auth (local dev). For **EAS** or release uploads, configure Sentry in the Expo plugin / env as usual.
+
 ## Tests & typecheck
 
 ```bash
