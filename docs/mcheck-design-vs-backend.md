@@ -11,12 +11,12 @@
 
 ## 1. Executive summary
 
-**Build status (2026-04-17):**
+**Build status (2026-04-19):**
 
-- McCheck mobile **organizer V1** is implemented; **iOS** path verified on **TestFlight / device** (login, active events, detail, guest list, profile, logout) — **signed off**.
-- **Android:** same client; store distribution pending **Google Play Console** verification and **`eas submit`** (service account JSON); use **`preview` EAS APK** (install QR on the Expo build page) or **`adb install`** for device QA until then — **not** Expo Go for Google.
+- McCheck mobile **organizer V1** is implemented; **iOS** verified on **TestFlight / device** against staging (2026-04-17 sign-off).
+- **Android:** same client; **physical device** smoke on **staging** completed (2026-04-19) using **EAS `preview` APK** (install QR on the Expo build page) or **`adb install`** — **not** Expo Go for Google.
 - Stitch visual direction is translated into a native token system and polished screen layouts.
-- Remaining delivery risk for **new platforms** is **Play onboarding + OAuth device config**; core API contract for V1 is exercised on iOS against staging.
+- **Store track:** **Play Console** verification and **`eas submit`** (service account JSON) remain for **Play internal/production** distribution; they do not gate V1 **functional** sign-off on staging.
 
 | Area | Mobile / UI | Backend today |
 |------|-------------|----------------|
@@ -252,3 +252,4 @@ Use this as a living checklist (copy into Issues/Projects as needed).
 | 1.6 | 2026-04-16 | **Confirmed:** registrations list endpoint is **owner-only** in production (403 for non-owner) |
 | 1.7 | 2026-04-17 | **V1 iOS** sign-off; Android pending Play + submit |
 | 1.8 | 2026-04-18 | Android QA: EAS preview APK / install QR; not Expo Go for Google |
+| 1.9 | 2026-04-19 | V1 Android physical staging sign-off; Play = distribution not QA gate |

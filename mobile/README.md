@@ -2,10 +2,10 @@
 
 React Native app for **organizers**: active events → detail → guest list. Uses **mock API by default** in local dev; **live** behavior matches `docs/api-docs.json` (see `docs/moveconcept-backend-handoff.md`).
 
-## Current state (2026-04-18)
+## Current state (2026-04-19)
 
 - **Phase A (active):** use **mock API** for daily dev — run the checklist in [../docs/mcheck-phase-a.md](../docs/mcheck-phase-a.md) (manual QA + optional `EXPO_PUBLIC_MOCK_SCENARIO`). Use `EXPO_PUBLIC_USE_MOCK_API=false` only when intentionally testing staging or shipping a build with staging env.
-- V1 organizer flow is implemented and was exercised on **staging** + **TestFlight** (iOS) and **EAS Android** (preview APK / production AAB):
+- V1 organizer flow is implemented and was **smoke-tested on physical devices** against **MoveConcept staging** on **iOS** (TestFlight) and **Android** (EAS `preview` APK); store tracks (Play / wide TestFlight) follow [../docs/mcheck-store-release-checklist.md](../docs/mcheck-store-release-checklist.md).
   - **Login:** email/password and **Google** (native `@react-native-google-signin/google-signin` → `POST /api/auth/login/social/google`). **Not available in Expo Go** — native modules require an **EAS build** or **`expo run:android` / `expo run:ios`**.
   - Active events, event detail, guest list (search, pagination, pull-to-refresh), profile + logout
 - UI: Stitch-inspired polish (tokens, spacing, typography, copy).

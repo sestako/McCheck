@@ -1,6 +1,6 @@
 # McCheck — implementation plan
 
-## Current status snapshot (2026-04-18)
+## Current status snapshot (2026-04-19)
 
 **Completed in mobile (`mobile/`):**
 
@@ -9,19 +9,20 @@
 - **Auth:** `AuthContext` — email `POST /api/auth/login`; Google via `GoogleSignInButton` + `@react-native-google-signin/google-signin`, then `POST /api/auth/login/social/google` with `accessToken` + `deviceName`; token in SecureStore; `/api/auth/me` for profile; logout `DELETE /api/auth/logout`.
 - **Google / devices:** **`@react-native-google-signin/google-signin`** (not Expo Go). Before each interactive sign-in the app calls **`GoogleSignin.signOut()`** so Android shows the **account picker**; **`signOut()`** in `AuthContext` also clears the Google SDK session. iOS **EAS production** → TestFlight; Android **EAS `preview` APK** (QR on build page) or **production AAB**; env in `mobile/eas.json` / EAS dashboard.
 - **V1 iOS:** Primary organizer path verified on **iOS** (TestFlight / device): login → active events → detail → guest list → profile (scrollable) → logout — **signed off 2026-04-17**.
+- **V1 Android:** Same organizer smoke path verified on a **physical device** against **MoveConcept staging** (EAS native build; email + Google) — **signed off 2026-04-19**.
 - Stitch-inspired UI tokens and polish; **Retry** on event detail + guest list errors; mapper unit tests.
 - **CI:** GitHub Actions — `npm run typecheck` + `npm test` on `mobile/`; `initObservability` placeholder for Sentry.
 - **Staging (real data):** An activity **created on MoveConcept staging** by the signed-in organizer **appears in Active events** in the app (same account as web) — validated 2026-04-16.
 
-### After iOS V1 sign-off
+### After V1 sign-off (iOS + Android)
 
 - **Regression hygiene:** Keep **[mcheck-phase-a.md](./mcheck-phase-a.md)** (mock script + `EXPO_PUBLIC_MOCK_SCENARIO` matrix + CI) for day-to-day work; run **[staging-runbook.md](./staging-runbook.md)** before each tagged release.
-- **Android:** **EAS Android builds** are possible anytime (`preview` = APK + install QR; `production` = AAB for Play). **Play Console distribution** may be blocked until **Google developer / organization verification** completes; then add a **Google Play service account JSON** for `eas submit --platform android` (prompted on first submit; not stored in git). **Internal testing** is the TestFlight-equivalent track. Native Google + SHA-1: [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md).
-- **V2 (later):** scanner / check-in — see **Below the line — V2**; do not start until Phase 2 kickoff steps **1–8** are green on staging **per platform** you ship (rule in Phase 2 section).
+- **Android (store track):** **EAS `production`** builds **`.aab`** for Play. **Play Console** org verification and **`eas submit --platform android`** (service account JSON on first submit) remain the path to **Internal / production** tracks; device QA on staging is already done via **`preview` APK**. Native Google + SHA-1: [mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md).
+- **V2 (later):** scanner / check-in — see **Below the line — V2**. Phase 2 steps **1–8** are **green on iOS and Android** against staging; start V2 when product/backend **explicitly prioritize** it.
 
 **Still pending / next validation:**
 
-- **Android:** Play verification → service account → `eas submit` → internal testers → same smoke as iOS on a physical device.
+- **Store ops (optional):** Play **`eas submit`** and store listing when you move beyond APK/sideload testers.
 - **Backend / product:** Continue to resolve any drift between live staging and `api-docs.json` (policy notes may still live in [moveconcept-backend-handoff.md](./moveconcept-backend-handoff.md)).
 - **V2:** Phase B backlog when you explicitly kick off scanner/check-in.
 
@@ -103,17 +104,17 @@ Use this as the first working sequence once staging API pieces are delivered.
 |------|-------|------|-----------|
 | 1 | MoveConcept | Confirm staging URLs + test organizer credentials + sample owned activity with registrations | Mobile can authenticate and load non-empty test data |
 | 2 | McCheck | Switch env to staging (`EXPO_PUBLIC_API_BASE_URL`) and disable mocks (`EXPO_PUBLIC_USE_MOCK_API=false`) | App boots against real backend without mock fallback |
-| 3 | McCheck | Organizer auth end-to-end (**email** + **Google** via `/api/auth/login/social/google`), persist token, logout | Verified on simulator + **TestFlight**; login survives app restart |
+| 3 | McCheck | Organizer auth end-to-end (**email** + **Google** via `/api/auth/login/social/google`), persist token, logout | Verified on **TestFlight** (iOS) + **physical Android** (EAS APK) against **staging**; login survives app restart |
 | 4 | McCheck | Integrate owner-scoped activities list API and map payload to list cards | Active events screen shows only owned upcoming/ongoing events |
 | 5 | McCheck | Integrate event detail with 403/404 handling and user-facing fallback states | Detail screen works for owned events and fails safely otherwise |
 | 6 | McCheck + MoveConcept | Integrate registrations with owner-only authorization verification | Owner loads registrations; non-owner gets **403** — **policy confirmed production 2026-04-16** |
 | 7 | McCheck | Remove mock-first assumptions from runtime paths (keep mocks only for tests/dev fallback) | Normal app flow runs fully on real API |
 | 8 | McCheck | Run staging QA pass (login → events → detail → guest list search/pagination → profile/logout) | No blocker regressions in primary path |
-| 9 | McCheck | Freeze V1 release candidate scope and create Phase B backlog (scanner/check-in) | **iOS:** V1 signed off 2026-04-17. **Android:** repeat sign-off after Play internal track + device smoke. |
+| 9 | McCheck | Freeze V1 release candidate scope and create Phase B backlog (scanner/check-in) | **iOS:** V1 signed off 2026-04-17 (TestFlight / device). **Android:** V1 signed off 2026-04-19 (**physical device**, staging, EAS native build). |
 
-**Platform note (2026-04-17):** Steps **1–8** are **done for iOS** (staging + TestFlight). **Android** completes the same steps once Play Console access and `eas submit` are unblocked.
+**Platform note (2026-04-19):** Phase 2 steps **1–8** are **done on staging for both iOS and Android** (including organizer smoke on **physical** hardware). **Play Console** `eas submit` / internal testing track is **store distribution**, not a blocker for V1 functional sign-off.
 
-**Suggested working rule:** do not start scanner/check-in work until steps 1-8 are green on staging **for each platform** you release.
+**Suggested working rule:** do not start scanner/check-in (V2) until product/backend explicitly prioritize it; V1 staging validation is complete on **both** platforms.
 
 ---
 
@@ -210,3 +211,4 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 | 2.5 | 2026-04-16 | **Organizer notifications:** in-app (user notifications API) as preparation for push; OpenAPI snapshot may omit those routes |
 | 2.6 | 2026-04-17 | **V1 iOS signed off;** Android pending Play verification + submit; backend prerequisites table aligned with `GET /users/me/activities`; Phase 2 platform note |
 | 2.7 | 2026-04-18 | Snapshot: native Google Sign-In, sign-out before sign-in, EAS APK QR vs Expo Go |
+| 2.8 | 2026-04-19 | V1 Android physical + staging sign-off; Phase 2 note; pending = store ops not device QA |

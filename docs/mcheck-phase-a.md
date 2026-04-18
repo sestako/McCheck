@@ -4,9 +4,9 @@ Phase A locks the mobile client for **daily development with mocks** and optiona
 
 ## Current team focus
 
-**V1 iOS** is signed off (2026-04-17). Phase A stays the **default regression harness** for ongoing work: mock-mode QA catches UI/client breaks without staging.
+**V1 iOS and Android** are signed off on **staging** with **physical devices** (iOS 2026-04-17; Android 2026-04-19). Phase A stays the **default regression harness** for ongoing work: mock-mode QA catches UI/client breaks without staging.
 
-1. In `mobile/`, use **mocks** for daily work: omit `EXPO_PUBLIC_USE_MOCK_API` or set it to `true` in `.env.local` (staging `false` is for explicit integration / TestFlight / Android device checks).
+1. In `mobile/`, use **mocks** for daily work: omit `EXPO_PUBLIC_USE_MOCK_API` or set it to `true` in `.env.local` (staging `false` is for explicit integration or EAS builds on device).
 2. Run the **Manual QA script** below on simulator when you touch UI, navigation, or API mappers.
 3. Run each **`EXPO_PUBLIC_MOCK_SCENARIO`** row after relevant changes; fix regressions.
 4. Keep CI green (`npm test`, `npm run typecheck` from `mobile/`).
@@ -81,3 +81,4 @@ With **mock API** enabled, set **`EXPO_PUBLIC_MOCK_SCENARIO`** in `.env` / `.env
 | 1.6 | 2026-04-16 | Profile `/me` field parity + cold-start refresh; guest list empty vs error UX; optional Sentry init when DSN + non-dev + SDK installed; EAS production `android.buildType` |
 | 1.7 | 2026-04-17 | **V1 iOS signed off;** Phase A reframed as ongoing regression + pre-release staging smoke |
 | 1.8 | 2026-04-18 | Staging vs Expo Go vs EAS native build; Google doc link text |
+| 1.9 | 2026-04-19 | Current focus: V1 both platforms physical staging sign-off |

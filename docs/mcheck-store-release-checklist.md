@@ -2,12 +2,12 @@
 
 Use before **public** or **internal** store submission. Backend can still be staging for TestFlight / internal tracks.
 
-## Platform status (2026-04-17)
+## Platform status (2026-04-19)
 
 | Platform | Status |
 |----------|--------|
-| **iOS** | **V1 verified** (TestFlight / primary organizer path). Continue checklist items for each new build you ship to testers or the store. |
-| **Android** | **Play Console** may show **organization / developer verification** (e.g. D‑U‑N‑S) for days — console access required before **Internal testing**. **`eas submit --platform android`** needs a **Google Play service account JSON** key on first submit (EAS stores credentials; do not commit the JSON). Until then, distribute **`preview` APK** builds: open the **Expo build page** from the CLI output and use the **QR** or **Download** link (see [../mobile/README.md](../mobile/README.md)); **`adb install`** also works. |
+| **iOS** | **V1 verified** on **staging** (TestFlight / physical device, 2026-04-17). Continue checklist items for each new build you ship to testers or the store. |
+| **Android** | **V1 verified** on **staging** with a **physical device** (EAS **`preview` APK**, 2026-04-19). **Play Console** org verification + **`eas submit --platform android`** (service account JSON on first submit) still apply when you promote to **Internal / production** tracks; until then use **Expo build page QR** or **`adb install`** ([../mobile/README.md](../mobile/README.md)). |
 
 ## Identity & assets
 
@@ -40,3 +40,4 @@ Use before **public** or **internal** store submission. Backend can still be sta
 | 1.0 | 2026-04-09 | Initial checklist |
 | 1.1 | 2026-04-17 | iOS V1 sign-off vs Android Play verification + service account for submit |
 | 1.2 | 2026-04-18 | Android internal QA: EAS preview APK + Expo build page QR; EAS profile wording |
+| 1.3 | 2026-04-19 | Platform table: V1 staging sign-off on physical Android + iOS |

@@ -4,7 +4,7 @@ Use this when testing McCheck against **MoveConcept staging** (or after backend 
 
 **Validated (2026-04-16):** Create an activity on the **staging MoveConcept site** while signed in as the organizer; after signing into McCheck with the **same account**, the event appears under **Active events**.
 
-**V1 iOS (2026-04-17):** Organizer smoke path **signed off on iOS** (TestFlight / device): auth → active events → detail → guest list → profile → logout. **Android:** run the same checklist on a device using an **EAS `preview` APK** (QR or download on the [Expo build page](https://expo.dev) — see [../mobile/README.md](../mobile/README.md) § *Install on a physical Android phone*) or **USB `adb install`**, or after Play **Internal testing** once the app is on a track. **Google sign-in** only works in those **native** binaries, not in **Expo Go** ([mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md)).
+**V1 (2026-04-19):** Organizer smoke path **signed off on iOS and Android** on **physical devices** against **MoveConcept staging**: auth (email + **Google** in native build) → active events → detail → guest list → profile → logout. **iOS:** TestFlight / device (initial sign-off 2026-04-17). **Android:** **EAS `preview` APK** (QR or download on the [Expo build page](https://expo.dev) — [../mobile/README.md](../mobile/README.md) § *Install on a physical Android phone*) or **USB `adb install`**; **not Expo Go** ([mcheck-android-google-oauth-setup.md](./mcheck-android-google-oauth-setup.md)). **Play Internal testing** remains optional for wider Android distribution.
 
 ## Roles (fill in for your org)
 
@@ -114,3 +114,4 @@ MoveConcept stores **database** notifications for the **activity owner** when so
 | 2.1 | 2026-04-17 | **V1 iOS** sign-off note; Android = repeat smoke when Play internal or APK QA |
 | 2.2 | 2026-04-17 | Pointer to `mobile/README.md` — Android APK USB sideload (`preview` + `adb install`) |
 | 2.3 | 2026-04-18 | EAS APK QR vs Expo Go; one-time setup steps for native Google on device |
+| 2.4 | 2026-04-19 | **V1 Android + iOS:** physical device staging sign-off recorded |
