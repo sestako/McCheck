@@ -130,6 +130,7 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 - **API:** Resolve ticket payload → registration; **POST** check-in (idempotent); error codes (invalid, wrong event, already checked in, cancelled).
 - **Mobile:** Scanner UI (camera, torch), success/failure screens tied to real API.
 - **Policies:** Only **owner** can check in (until V3 invites).
+- **Detail:** [mcheck-v2-implementation-plan.md](./mcheck-v2-implementation-plan.md) — agreed product decisions and delivery plan.
 
 ---
 
@@ -188,6 +189,7 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 - [staging-runbook.md](./staging-runbook.md) — first staging integration steps and smoke test.
 - [mcheck-google-oauth-notes.md](./mcheck-google-oauth-notes.md) — Google sign-in (implemented; contract in **`api-docs.json`** `LoginViaSocialRequest`).
 - [mcheck-store-release-checklist.md](./mcheck-store-release-checklist.md) — store / EAS / assets checklist.
+- [mcheck-v2-implementation-plan.md](./mcheck-v2-implementation-plan.md) — V2 check-in: locked decisions and delivery plan.
 
 ## Document control
 
@@ -212,3 +214,4 @@ Everything below is **after V1** unless an item is explicitly pulled forward.
 | 2.6 | 2026-04-17 | **V1 iOS signed off;** Android pending Play verification + submit; backend prerequisites table aligned with `GET /users/me/activities`; Phase 2 platform note |
 | 2.7 | 2026-04-18 | Snapshot: native Google Sign-In, sign-out before sign-in, EAS APK QR vs Expo Go |
 | 2.8 | 2026-04-19 | V1 Android physical + staging sign-off; Phase 2 note; pending = store ops not device QA |
+| 2.9 | 2026-04-19 | Link V2 section to [mcheck-v2-implementation-plan.md](./mcheck-v2-implementation-plan.md) |
