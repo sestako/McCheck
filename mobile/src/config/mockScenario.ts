@@ -8,7 +8,8 @@ export type MockScenario =
   | 'activities_fail'
   | 'detail_404'
   | 'guests_403'
-  | 'edge_layout';
+  | 'edge_layout'
+  | 'checkin_unknown';
 
 const ALLOWED = new Set<string>([
   'login_fail',
@@ -16,6 +17,7 @@ const ALLOWED = new Set<string>([
   'detail_404',
   'guests_403',
   'edge_layout',
+  'checkin_unknown',
 ]);
 
 export function getMockScenario(): MockScenario {

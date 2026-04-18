@@ -66,12 +66,24 @@ export function mapAttendee(raw: unknown): AttendeeRow {
     pickDisplayName(u) ??
     (typeof u.email === 'string' && u.email.trim() ? u.email.trim() : null) ??
     'Guest';
+  const userId = Number(u.id ?? 0);
+  const registrationId = Number(o.id ?? o.registration_id ?? o.registrationId ?? userId);
+  const ticketRaw = o.ticketPublicId ?? o.public_ticket_id ?? o.ticket_id ?? o.ticketId;
+  const ticketPublicId =
+    ticketRaw != null && String(ticketRaw).trim().length > 0 ? String(ticketRaw).trim() : null;
+  const checkedRaw = o.checkedInAt ?? o.checked_in_at;
+  const checkedInAt =
+    checkedRaw != null && String(checkedRaw).trim().length > 0 ? String(checkedRaw).trim() : null;
   return {
     user: {
-      id: Number(u.id ?? 0),
+      id: userId,
       displayName,
     },
     isBlocked: Boolean(o.isBlocked ?? o.is_blocked ?? false),
+    registrationId: Number.isFinite(registrationId) && registrationId > 0 ? registrationId : userId,
+    ticketPublicId,
+    checkedInAt,
+    isGuest: isGuest || undefined,
   };
 }
 

@@ -17,7 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.moveconcept.mccheck",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "McCheck uses the camera to scan ticket QR codes at the door."
       }
     },
     "android": {
@@ -33,6 +34,12 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow McCheck to scan ticket QR codes at the door."
+        }
+      ],
       "expo-secure-store",
       "@sentry/react-native",
       [

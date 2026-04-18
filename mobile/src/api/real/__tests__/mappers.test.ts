@@ -110,16 +110,34 @@ describe('mapActivity', () => {
 describe('mapAttendee', () => {
   it('maps nested user and blocked snake_case', () => {
     const row = mapAttendee({
+      id: 99,
       user: { id: 1, public_name: 'Alex', last_name: 'Q' },
       is_blocked: true,
     });
     expect(row.user.displayName).toBe('Alex');
     expect(row.isBlocked).toBe(true);
+    expect(row.registrationId).toBe(99);
+    expect(row.ticketPublicId).toBeNull();
+    expect(row.checkedInAt).toBeNull();
   });
 
   it('uses flat user shape', () => {
     const row = mapAttendee({ id: 2, first_name: 'Jo', last_name: 'Do' } as Record<string, unknown>);
     expect(row.user.displayName).toBe('Jo Do');
+    expect(row.registrationId).toBe(2);
+  });
+
+  it('maps V2 ticket and checked-in fields', () => {
+    const row = mapAttendee({
+      id: 50,
+      user: { id: 10, public_name: 'Pat' },
+      public_ticket_id: 'mct-102-10000',
+      checked_in_at: '2026-04-19T12:00:00.000Z',
+      is_guest: true,
+    });
+    expect(row.ticketPublicId).toBe('mct-102-10000');
+    expect(row.checkedInAt).toBe('2026-04-19T12:00:00.000Z');
+    expect(row.isGuest).toBe(true);
   });
 });
 

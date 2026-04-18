@@ -38,7 +38,7 @@ From `mobile/`:
 npm test
 ```
 
-Covers: active-event helper, activities list JSON shapes, activity/attendee **mappers**, **`/me` session user** parsing, auth token parsing, user-facing API error messages.
+Covers: active-event helper, activities list JSON shapes, activity/attendee **mappers**, **`/me` session user** parsing, auth token parsing, user-facing API error messages, **V2 mock check-in** (`resolveTicket` / `checkInTicket`), ticket payload helper.
 
 ## Mock-only QA scenarios (no backend)
 
@@ -51,6 +51,7 @@ With **mock API** enabled, set **`EXPO_PUBLIC_MOCK_SCENARIO`** in `.env` / `.env
 | `detail_404` | Every event **detail** load returns 404 (**Retry** on detail). |
 | `guests_403` | Guest list fails with 403 (**Retry** next to error). |
 | `edge_layout` | Extra mock activities: very long titles, `+14:00` date range, empty guest list, 60-name pagination stress. |
+| `checkin_unknown` | **Scan / check-in (mock):** every resolve and check-in returns **unknown ticket** (error UX on **Scan tickets** screen). |
 
 **UI:** Login uses friendly API messages in mock mode; **Event detail** and **Guest list** show **Retry** on error; list/detail/guest rows clamp long text.
 
@@ -82,3 +83,4 @@ With **mock API** enabled, set **`EXPO_PUBLIC_MOCK_SCENARIO`** in `.env` / `.env
 | 1.7 | 2026-04-17 | **V1 iOS signed off;** Phase A reframed as ongoing regression + pre-release staging smoke |
 | 1.8 | 2026-04-18 | Staging vs Expo Go vs EAS native build; Google doc link text |
 | 1.9 | 2026-04-19 | Current focus: V1 both platforms physical staging sign-off |
+| 1.10 | 2026-04-19 | V2 mock: `checkin_unknown` scenario; Scan tickets screen + guest list check-in badges; `expo-camera` |

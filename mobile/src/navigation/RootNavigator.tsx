@@ -9,6 +9,7 @@ import { EventDetailScreen } from '../screens/EventDetailScreen';
 import { GuestListScreen } from '../screens/GuestListScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
+import { ScanTicketsScreen } from '../screens/ScanTicketsScreen';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -55,6 +56,7 @@ export function RootNavigator() {
             />
             <Stack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: 'Event' }} />
             <Stack.Screen name="GuestList" component={GuestListScreen} options={{ title: 'Guest list' }} />
+            <Stack.Screen name="ScanTickets" component={ScanTicketsScreen} options={{ title: 'Scan tickets' }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
           </>
         )}

@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -18,6 +18,12 @@ import type { RootStackParamList } from '../navigation/types';
 import { colors, radius, space, type } from '../theme/tokens';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GuestList'>;
+
+function formatShortTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 export function GuestListScreen({ route, navigation }: Props) {
   const { activityId, activityName } = route.params;
@@ -38,9 +44,24 @@ export function GuestListScreen({ route, navigation }: Props) {
     [items]
   );
 
-  useEffect(() => {
-    navigation.setOptions({ title: activityName });
-  }, [activityName, navigation]);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: activityName,
+      headerRight: () => (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Scan tickets"
+          hitSlop={12}
+          onPress={() =>
+            navigation.navigate('ScanTickets', { activityId, activityName })
+          }
+          style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1, paddingHorizontal: 8 })}
+        >
+          <Text style={styles.headerScan}>Scan</Text>
+        </Pressable>
+      ),
+    });
+  }, [activityId, activityName, navigation]);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(search), 300);
@@ -152,7 +173,7 @@ export function GuestListScreen({ route, navigation }: Props) {
         <FlatList
           accessibilityLabel="Guest list"
           data={items}
-          keyExtractor={(item) => String(item.user.id)}
+          keyExtractor={(item) => `reg-${item.registrationId}`}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -179,8 +200,19 @@ export function GuestListScreen({ route, navigation }: Props) {
                 <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
                   {item.user.displayName}
                 </Text>
-                <Text style={styles.subline}>Guest</Text>
+                <Text style={styles.subline}>
+                  {item.checkedInAt
+                    ? `Checked in ${formatShortTime(item.checkedInAt)}`
+                    : item.isGuest
+                      ? 'Guest'
+                      : 'Registered'}
+                </Text>
               </View>
+              {item.checkedInAt ? (
+                <Text style={styles.checkedInPill} accessibilityLabel="Checked in">
+                  In
+                </Text>
+              ) : null}
               {item.isBlocked ? (
                 <Text style={styles.blocked} accessibilityRole="text" accessibilityLabel="Blocked guest">
                   Blocked
@@ -230,6 +262,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  headerScan: { color: colors.primaryContainer, fontWeight: '700', fontSize: type.bodyMd },
   counterText: { color: colors.onSurfaceVariant, fontSize: type.labelSm },
   counterWarn: { color: colors.error, fontSize: type.labelSm, fontWeight: '600' },
   listContent: {
@@ -260,6 +293,16 @@ const styles = StyleSheet.create({
   rowTextWrap: { flex: 1 },
   name: { fontSize: type.bodyLg, color: colors.onSurface, fontWeight: '500' },
   subline: { marginTop: space.xxs, color: colors.onSurfaceVariant, fontSize: type.labelSm },
+  checkedInPill: {
+    fontSize: type.labelSm,
+    fontWeight: '700',
+    color: colors.onPrimary,
+    backgroundColor: colors.primary,
+    textTransform: 'uppercase',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
   blocked: {
     fontSize: type.labelSm,
     fontWeight: '700',

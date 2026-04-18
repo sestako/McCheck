@@ -15,7 +15,16 @@ export function createRealActivitiesApi(getToken: TokenGetter): ActivitiesApi {
     getActivity: (id) => fetchActivity(getToken, id),
     getAttendees: (activityId, page, search) =>
       fetchAttendees(getToken, activityId, page, search),
+    resolveTicket: () => Promise.reject(checkInNotAvailable()),
+    checkInTicket: () => Promise.reject(checkInNotAvailable()),
   };
+}
+
+function checkInNotAvailable(): ApiError {
+  return new ApiError(
+    'Check-in is not available yet. MoveConcept resolve/check-in endpoints are not wired in this build (see docs/mcheck-v2-implementation-plan.md).',
+    501
+  );
 }
 
 async function authHeaders(getToken: TokenGetter): Promise<HeadersInit> {

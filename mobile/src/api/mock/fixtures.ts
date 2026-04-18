@@ -1,4 +1,7 @@
 import type { Activity, AttendeeRow } from '../types';
+import { isMockTicketCheckedIn, mockTicketCheckedInAt } from './checkInStore';
+import { namesForActivity } from './mockAttendeeNames';
+import { mockTicketPublicId } from './mockTicketIds';
 
 const owner = { id: 1, displayName: 'Alex Organizer' };
 
@@ -132,17 +135,6 @@ export const mockActivitiesEdge: Activity[] = [
 /** @deprecated Use mockActivitiesCore; kept as core-only for older references. */
 export const mockActivities = mockActivitiesCore;
 
-function namesForActivity(activityId: number): string[] {
-  if (activityId === 105) return [];
-  if (activityId === 106) {
-    return Array.from({ length: 60 }, (_, i) => `Registrant ${String(i + 1).padStart(3, '0')}`);
-  }
-  if (activityId === 101 || activityId === 104) {
-    return ['Jordan Lee', 'Sam Rivera', 'Taylor Chen', 'Riley Morgan', 'Casey Brooks'];
-  }
-  return ['Morgan Blake', 'Jamie Fox'];
-}
-
 export function mockAttendeesPage(
   activityId: number,
   page: number,
@@ -156,10 +148,21 @@ export function mockAttendeesPage(
   }
   const start = (page - 1) * perPage;
   const slice = names.slice(start, start + perPage);
-  const items: AttendeeRow[] = slice.map((displayName, i) => ({
-    user: { id: 10000 + start + i, displayName },
-    isBlocked: false,
-  }));
+  const items: AttendeeRow[] = slice.map((displayName, i) => {
+    const registrationId = 10_000 + start + i;
+    const ticketPublicId = mockTicketPublicId(activityId, registrationId);
+    const checkedIn = isMockTicketCheckedIn(ticketPublicId);
+    const globalIndex = start + i;
+    const isGuest = activityId === 102 && globalIndex % 2 === 1;
+    return {
+      user: { id: registrationId, displayName },
+      isBlocked: false,
+      registrationId,
+      ticketPublicId,
+      checkedInAt: checkedIn ? mockTicketCheckedInAt(ticketPublicId) : null,
+      isGuest,
+    };
+  });
   const hasMore = start + perPage < names.length;
   return { items, hasMore };
 }

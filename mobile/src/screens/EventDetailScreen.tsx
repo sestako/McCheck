@@ -165,6 +165,20 @@ export function EventDetailScreen({ route, navigation }: Props) {
       >
         <Text style={styles.ctaText}>View guest list</Text>
       </Pressable>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Scan tickets for check-in"
+        style={({ pressed }) => [styles.ctaSecondary, pressed && { opacity: 0.9 }]}
+        onPress={() =>
+          navigation.navigate('ScanTickets', {
+            activityId: activity.id,
+            activityName: activity.name,
+          })
+        }
+      >
+        <Text style={styles.ctaSecondaryText}>Scan tickets</Text>
+      </Pressable>
     </ScrollView>
   );
 }
@@ -302,6 +316,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaText: { color: colors.onPrimary, fontSize: type.bodyLg, fontWeight: '700' },
+  ctaSecondary: {
+    marginTop: space.md,
+    backgroundColor: colors.surfaceContainerLow,
+    borderWidth: 1,
+    borderColor: colors.outlineSoft,
+    borderRadius: radius.md,
+    paddingVertical: space.md,
+    alignItems: 'center',
+  },
+  ctaSecondaryText: { color: colors.primaryContainer, fontSize: type.bodyLg, fontWeight: '700' },
   error: { color: colors.error, padding: space.md, textAlign: 'center' },
   retryBtn: {
     marginTop: space.md,

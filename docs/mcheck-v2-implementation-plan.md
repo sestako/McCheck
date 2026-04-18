@@ -117,3 +117,4 @@ Coordinate via tickets and refreshed **`docs/api-docs.json`**; do not treat the 
 | Version | Date | Notes |
 |---------|------|--------|
 | 1.0 | 2026-04-19 | Initial V2 plan: locked PM answers (undo, opaque ticket id, guests, multi-device idempotency, online-only, organizer-only list); backend + mobile tracks; slices + tests |
+| 1.1 | 2026-04-19 | **McCheck mobile (partial V2-A/C):** mock opaque ticket ids on guest rows, `resolveTicket` / `checkInTicket` in mock + 501 stubs on real API, **Scan tickets** screen (`expo-camera` QR + manual entry), guest list badges + nav; see [mcheck-phase-a.md](./mcheck-phase-a.md) `checkin_unknown` |
