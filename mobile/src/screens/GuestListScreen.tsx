@@ -1,5 +1,5 @@
-import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -14,20 +14,31 @@ import type { AttendeeRow } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { userFriendlyApiMessage } from '../lib/apiErrors';
 import { reportError } from '../lib/observability';
-import type { AttendeesStackParamList, EventStackParamList } from '../navigation/types';
+import type { MainStackParamList } from '../navigation/types';
+import { colors, elevation, radius, space, type } from '../theme/tokens';
+import { StitchHeader } from '../ui/StitchHeader';
 
-/** Both stacks register `ScanTickets` with identical params; TS union `navigate` is incompatible. */
-function navigateToScanTickets(
-  navigation: NativeStackScreenProps<EventStackParamList, 'GuestList'>['navigation'] | NativeStackScreenProps<AttendeesStackParamList, 'GuestList'>['navigation'],
-  params: { activityId: number; activityName: string }
-) {
-  (navigation as NativeStackNavigationProp<EventStackParamList>).navigate('ScanTickets', params);
+type Props = NativeStackScreenProps<MainStackParamList, 'GuestList'>;
+
+const AVATAR_PALETTE = [
+  { bg: '#D1FAE5', fg: '#065F46' },
+  { bg: '#FFE4E6', fg: '#9F1239' },
+  { bg: '#DBEAFE', fg: '#1E3A8A' },
+  { bg: '#FEF3C7', fg: '#92400E' },
+  { bg: '#EDE9FE', fg: '#5B21B6' },
+  { bg: '#CFFAFE', fg: '#155E75' },
+  { bg: '#FCE7F3', fg: '#9D174D' },
+] as const;
+
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).slice(0, 2);
+  return parts.map((p) => p.charAt(0).toUpperCase()).join('') || '?';
 }
-import { colors, radius, space, type } from '../theme/tokens';
 
-type Props =
-  | NativeStackScreenProps<EventStackParamList, 'GuestList'>
-  | NativeStackScreenProps<AttendeesStackParamList, 'GuestList'>;
+function avatarFor(name: string) {
+  const code = [...name].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return AVATAR_PALETTE[code % AVATAR_PALETTE.length];
+}
 
 function formatShortTime(iso: string): string {
   const d = new Date(iso);
@@ -35,6 +46,7 @@ function formatShortTime(iso: string): string {
   return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+/** `docs/stitch-ref/guest-list.html` — Guest management with stats dashboard + IN/OUT rows. */
 export function GuestListScreen({ route, navigation }: Props) {
   const { activityId, activityName } = route.params;
   const { activitiesApi } = useAuth();
@@ -49,27 +61,10 @@ export function GuestListScreen({ route, navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [appendError, setAppendError] = useState<string | null>(null);
 
-  const blockedCount = useMemo(
-    () => items.reduce((sum, i) => sum + (i.isBlocked ? 1 : 0), 0),
-    [items]
-  );
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: activityName,
-      headerRight: () => (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Scan tickets"
-          hitSlop={12}
-          onPress={() => navigateToScanTickets(navigation, { activityId, activityName })}
-          style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1, paddingHorizontal: 8 })}
-        >
-          <Text style={styles.headerScan}>Scan</Text>
-        </Pressable>
-      ),
-    });
-  }, [activityId, activityName, navigation]);
+  const checkedIn = useMemo(() => items.reduce((n, i) => n + (i.checkedInAt ? 1 : 0), 0), [items]);
+  const total = items.length;
+  const remaining = Math.max(0, total - checkedIn);
+  const percent = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(search), 300);
@@ -129,216 +124,309 @@ export function GuestListScreen({ route, navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchWrap}>
-        <TextInput
-          accessibilityLabel="Search guests"
-          style={styles.search}
-          placeholder="Search guests"
-          placeholderTextColor={colors.onSurfaceVariant}
-          value={search}
-          onChangeText={setSearch}
-        />
-        <View style={styles.counterRow}>
-          <Text style={styles.counterText}>{items.length} guests loaded</Text>
-          {blockedCount > 0 ? (
-            <Text style={styles.counterWarn} accessibilityLabel={`${blockedCount} blocked guests`}>
-              {blockedCount} blocked
-            </Text>
-          ) : null}
-        </View>
-      </View>
-
-      {error && items.length > 0 ? (
-        <View style={styles.errorBanner}>
-          <Text style={styles.error}>{error}</Text>
+      <StitchHeader
+        onBackPress={navigation.canGoBack() ? () => navigation.goBack() : undefined}
+        rightSlot={
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Retry loading guests"
-            onPress={() => void resetAndLoad()}
+            accessibilityLabel="Scan tickets"
+            hitSlop={12}
+            onPress={() => navigation.navigate('ScanTickets', { activityId, activityName })}
+            style={({ pressed }) => [styles.headerScanBtn, pressed && { opacity: 0.85 }]}
           >
-            <Text style={styles.errorRetry}>Retry</Text>
+            <Text style={styles.headerScanText}>Scan</Text>
           </Pressable>
-        </View>
-      ) : null}
-
-      {error && items.length === 0 && !loading ? (
-        <View style={styles.centered}>
-          <Text style={styles.empty}>{error}</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Retry loading guests"
-            style={({ pressed }) => [styles.retryCta, pressed && { opacity: 0.9 }]}
-            onPress={() => void resetAndLoad()}
-          >
-            <Text style={styles.retryCtaText}>Retry</Text>
-          </Pressable>
-        </View>
-      ) : loading && items.length === 0 ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.primaryContainer} />
-        </View>
-      ) : (
-        <FlatList
-          accessibilityLabel="Guest list"
-          data={items}
-          keyExtractor={(item) => `reg-${item.registrationId}`}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => void refresh()}
-              tintColor={colors.primaryContainer}
-            />
-          }
-          onEndReachedThreshold={0.4}
-          onEndReached={() => void loadMore()}
-          contentContainerStyle={items.length === 0 ? styles.emptyContainer : styles.listContent}
-          ListEmptyComponent={
-            <Text style={styles.empty}>
-              {debounced.trim()
-                ? 'No guests match this search.'
-                : 'No registered guests yet. Pull down to refresh.'}
-            </Text>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.row}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{item.user.displayName.slice(0, 1).toUpperCase()}</Text>
-              </View>
-              <View style={styles.rowTextWrap}>
-                <Text style={styles.name} numberOfLines={2} ellipsizeMode="tail">
-                  {item.user.displayName}
-                </Text>
-                <Text style={styles.subline}>
-                  {item.checkedInAt
-                    ? `Checked in ${formatShortTime(item.checkedInAt)}`
-                    : item.isGuest
-                      ? 'Guest'
-                      : 'Registered'}
-                </Text>
-              </View>
-              {item.checkedInAt ? (
-                <Text style={styles.checkedInPill} accessibilityLabel="Checked in">
-                  In
-                </Text>
-              ) : null}
-              {item.isBlocked ? (
-                <Text style={styles.blocked} accessibilityRole="text" accessibilityLabel="Blocked guest">
-                  Blocked
-                </Text>
-              ) : null}
+        }
+      />
+      <FlatList
+        accessibilityLabel="Guest list"
+        data={items}
+        keyExtractor={(item) => `reg-${item.registrationId}`}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor={colors.primary} />
+        }
+        onEndReachedThreshold={0.4}
+        onEndReached={() => void loadMore()}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View>
+            <View style={styles.intro}>
+              <Text accessibilityRole="header" style={styles.eventTitle} numberOfLines={2}>
+                {activityName}
+              </Text>
+              <Text style={styles.eventSub}>Manage entry and guest details for this event.</Text>
             </View>
-          )}
-          ListFooterComponent={
-            <>
-              {appendError ? (
-                <View style={styles.appendErrorWrap}>
-                  <Text style={styles.appendError}>{appendError}</Text>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Retry loading more guests"
-                    onPress={() => void loadMore()}
-                  >
-                    <Text style={styles.errorRetry}>Try again</Text>
-                  </Pressable>
+
+            <View style={styles.searchWrap}>
+              <View style={styles.searchIconDot} />
+              <TextInput
+                accessibilityLabel="Search guests by name or ticket ID"
+                style={styles.searchInput}
+                placeholder="Search by name or ticket ID…"
+                placeholderTextColor={colors.slate400}
+                value={search}
+                onChangeText={setSearch}
+                autoCorrect={false}
+              />
+            </View>
+
+            <View style={styles.statsGrid}>
+              <View style={[styles.statCard, styles.statCardPrimary]}>
+                <Text style={styles.statCapLight}>CHECKED IN</Text>
+                <Text style={styles.statValueLight}>{checkedIn.toLocaleString()}</Text>
+                <View style={styles.progressTrack}>
+                  <View style={[styles.progressFill, { width: `${percent}%` }]} />
                 </View>
-              ) : null}
-              {loadingMore ? <ActivityIndicator style={{ margin: 16 }} color={colors.primaryContainer} /> : null}
-            </>
-          }
-        />
-      )}
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statCapMuted}>REMAINING</Text>
+                <Text style={styles.statValueBrand}>{remaining.toLocaleString()}</Text>
+                <Text style={styles.statFootnote}>Total: {total.toLocaleString()}</Text>
+              </View>
+            </View>
+
+            {error && items.length > 0 ? (
+              <View style={styles.errorBanner}>
+                <Text style={styles.errorBannerText}>{error}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry loading guests"
+                  onPress={() => void resetAndLoad()}
+                >
+                  <Text style={styles.errorRetry}>Retry</Text>
+                </Pressable>
+              </View>
+            ) : null}
+          </View>
+        }
+        ListEmptyComponent={
+          loading ? (
+            <View style={styles.centered}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : error ? (
+            <View style={styles.centered}>
+              <Text style={styles.empty}>{error}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading guests"
+                style={({ pressed }) => [styles.retryCta, pressed && { opacity: 0.9 }]}
+                onPress={() => void resetAndLoad()}
+              >
+                <Text style={styles.retryCtaText}>Retry</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Text style={styles.empty}>
+              {debounced.trim() ? 'No guests match this search.' : 'No registered guests yet.'}
+            </Text>
+          )
+        }
+        renderItem={({ item }) => {
+          const palette = avatarFor(item.user.displayName);
+          const initials = initialsOf(item.user.displayName);
+          const status = item.checkedInAt ? 'IN' : 'OUT';
+          return (
+            <View style={styles.row}>
+              <View style={styles.rowLeft}>
+                <View style={[styles.avatar, { backgroundColor: palette.bg }]}>
+                  <Text style={[styles.avatarText, { color: palette.fg }]}>{initials}</Text>
+                </View>
+                <View style={{ flexShrink: 1 }}>
+                  <Text style={styles.name} numberOfLines={1}>
+                    {item.user.displayName}
+                  </Text>
+                  <Text style={styles.subline} numberOfLines={1}>
+                    {item.isBlocked
+                      ? 'Blocked'
+                      : item.checkedInAt
+                        ? `Checked in ${formatShortTime(item.checkedInAt)}`
+                        : item.isGuest
+                          ? 'Guest'
+                          : 'Registered'}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.rowRight}>
+                <Text style={styles.statusLabel}>{status}</Text>
+                <Switch on={!!item.checkedInAt} />
+              </View>
+            </View>
+          );
+        }}
+        ListFooterComponent={
+          <>
+            {appendError ? (
+              <View style={styles.appendErrorWrap}>
+                <Text style={styles.appendError}>{appendError}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Retry loading more guests"
+                  onPress={() => void loadMore()}
+                >
+                  <Text style={styles.errorRetry}>Try again</Text>
+                </Pressable>
+              </View>
+            ) : null}
+            {loadingMore ? <ActivityIndicator style={{ margin: 16 }} color={colors.primary} /> : null}
+          </>
+        }
+      />
     </View>
   );
 }
 
+function Switch({ on }: { on: boolean }) {
+  return (
+    <View style={[switchStyles.track, on && switchStyles.trackOn]}>
+      <View style={[switchStyles.knob, on && switchStyles.knobOn]} />
+    </View>
+  );
+}
+
+const switchStyles = StyleSheet.create({
+  track: {
+    width: 40,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.slate200,
+    padding: 2,
+  },
+  trackOn: { backgroundColor: colors.primary },
+  knob: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.surfaceContainerLowest,
+  },
+  knobOn: { transform: [{ translateX: 18 }] },
+});
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
-  searchWrap: {
-    paddingHorizontal: space.lg,
-    paddingTop: space.xs,
+  headerScanBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: colors.secondaryContainer,
+    borderRadius: 999,
   },
-  search: {
+  headerScanText: { color: colors.primary, fontWeight: '800', fontSize: type.labelSm },
+
+  listContent: { paddingHorizontal: space.lg, paddingBottom: space.xxl },
+
+  intro: { marginTop: space.lg, marginBottom: space.md },
+  eventTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.onSurface,
+    letterSpacing: -0.5,
+  },
+  eventSub: { marginTop: 4, color: colors.slate500, fontSize: type.bodyMd },
+
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surfaceContainerLow,
     borderRadius: radius.md,
-    paddingHorizontal: space.md,
-    paddingVertical: 14,
-    fontSize: type.bodyLg,
-    color: colors.onSurface,
-  },
-  counterRow: {
-    marginTop: space.xs,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  headerScan: { color: colors.primaryContainer, fontWeight: '700', fontSize: type.bodyMd },
-  counterText: { color: colors.onSurfaceVariant, fontSize: type.labelSm },
-  counterWarn: { color: colors.error, fontSize: type.labelSm, fontWeight: '600' },
-  listContent: {
-    paddingHorizontal: space.lg,
-    paddingTop: space.sm,
-    paddingBottom: space.xxl,
-  },
-  row: {
+    paddingHorizontal: 14,
     marginBottom: space.md,
+  },
+  searchIconDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    borderColor: colors.slate400,
+    marginRight: 10,
+  },
+  searchInput: { flex: 1, paddingVertical: 12, fontSize: type.bodyMd, color: colors.slate700 },
+
+  statsGrid: { flexDirection: 'row', gap: 14, marginBottom: space.md },
+  statCard: {
+    flex: 1,
     backgroundColor: colors.surfaceContainerLowest,
-    borderWidth: 1,
-    borderColor: colors.outlineSoft,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
+    padding: space.md,
+    ...elevation.card,
+  },
+  statCardPrimary: { backgroundColor: colors.primary },
+  statCapLight: {
+    color: colors.onPrimary,
+    opacity: 0.85,
+    fontSize: type.labelXxs,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+  },
+  statCapMuted: {
+    color: colors.slate400,
+    fontSize: type.labelXxs,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+  },
+  statValueLight: {
+    marginVertical: 6,
+    color: colors.onPrimary,
+    fontSize: 30,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  statValueBrand: {
+    marginVertical: 6,
+    color: colors.primary,
+    fontSize: 30,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  statFootnote: { color: colors.slate400, fontSize: type.labelXxs, fontWeight: '600', marginTop: 10 },
+  progressTrack: {
+    marginTop: 10,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    overflow: 'hidden',
+  },
+  progressFill: { height: '100%', backgroundColor: colors.surfaceContainerLowest },
+
+  row: {
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: radius.lg,
     padding: space.md,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: space.sm,
+    marginBottom: 12,
+    ...elevation.card,
   },
+  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 1 },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.surfaceContainerLow,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: colors.onSurfaceVariant, fontWeight: '700' },
-  rowTextWrap: { flex: 1 },
-  name: { fontSize: type.bodyLg, color: colors.onSurface, fontWeight: '500' },
-  subline: { marginTop: space.xxs, color: colors.onSurfaceVariant, fontSize: type.labelSm },
-  checkedInPill: {
-    fontSize: type.labelSm,
-    fontWeight: '700',
-    color: colors.onPrimary,
-    backgroundColor: colors.primary,
-    textTransform: 'uppercase',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  blocked: {
-    fontSize: type.labelSm,
-    fontWeight: '700',
-    color: colors.error,
-    backgroundColor: colors.surfaceContainerLow,
-    textTransform: 'uppercase',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  emptyContainer: { flexGrow: 1, justifyContent: 'center' },
-  empty: { textAlign: 'center', color: colors.onSurfaceVariant, marginTop: space.xl },
-  centered: { flex: 1, justifyContent: 'center' },
+  avatarText: { fontSize: type.labelSm, fontWeight: '800' },
+  name: { color: colors.onSurface, fontSize: type.bodyMd, fontWeight: '700' },
+  subline: { marginTop: 2, color: colors.slate500, fontSize: type.labelSm },
+  rowRight: { flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 0 },
+  statusLabel: { color: colors.slate400, fontSize: type.labelXxs, fontWeight: '800', letterSpacing: 1 },
+
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: space.xxl },
+  empty: { textAlign: 'center', color: colors.slate500, fontSize: type.bodyMd, paddingVertical: space.xl },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: space.md,
-    marginHorizontal: space.lg,
-    marginTop: space.xs,
-    paddingVertical: space.xs,
+    backgroundColor: colors.errorSurface,
+    borderRadius: radius.md,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    marginBottom: space.md,
   },
-  error: { color: colors.error, flex: 1 },
-  errorRetry: {
-    color: colors.primaryContainer,
-    fontWeight: '700',
-    fontSize: type.labelSm,
-  },
+  errorBannerText: { color: colors.error, flex: 1, fontSize: type.bodyMd, fontWeight: '600' },
+  errorRetry: { color: colors.primary, fontWeight: '800', fontSize: type.labelSm },
   retryCta: {
     marginTop: space.md,
     backgroundColor: colors.primary,
@@ -346,7 +434,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.xl,
     paddingVertical: space.sm,
   },
-  retryCtaText: { color: colors.onPrimary, fontWeight: '600' },
+  retryCtaText: { color: colors.onPrimary, fontWeight: '700' },
   appendErrorWrap: {
     paddingHorizontal: space.lg,
     paddingVertical: space.sm,

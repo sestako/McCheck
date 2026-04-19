@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,9 +16,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { API_BASE_URL, USE_MOCK_API } from '../config/env';
 import { useAuth } from '../context/AuthContext';
+import type { MainStackParamList } from '../navigation/types';
 import { colors, space, type as typeScale } from '../theme/tokens';
+import { StitchHeader } from '../ui/StitchHeader';
 
-/** Profile & Staff Stitch HTML — body / cards / ring / logout (HTML wins over DESIGN.md on this screen). */
+type Props = NativeStackScreenProps<MainStackParamList, 'Settings'>;
+
+/** Profile & Staff Stitch HTML: body / cards / ring / logout (HTML wins over DESIGN.md on this screen). */
 const STITCH = {
   bodyBg: '#F7F9FB',
   sectionCard: '#F1F3F5',
@@ -74,10 +79,14 @@ function StitchRow({
   );
 }
 
-export function SettingsScreen() {
+export function SettingsScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { user, signOut, refreshProfile, profileRefreshing } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
+
+  const dismiss = useCallback(() => {
+    if (navigation.canGoBack()) navigation.goBack();
+  }, [navigation]);
 
   const onSignOut = useCallback(async () => {
     setSigningOut(true);
@@ -120,18 +129,32 @@ export function SettingsScreen() {
       : null;
 
   return (
-    <ScrollView
-      style={[styles.scroll, { paddingTop: insets.top + space.md }]}
-      contentContainerStyle={styles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-      refreshControl={
-        <RefreshControl
-          refreshing={profileRefreshing}
-          onRefresh={() => void refreshProfile()}
-          tintColor={colors.primary}
-        />
-      }
-    >
+    <View style={styles.scroll}>
+      <StitchHeader
+        title="Profile"
+        rightSlot={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close profile"
+            hitSlop={10}
+            onPress={dismiss}
+            style={({ pressed }) => [styles.doneBtn, pressed && styles.pressed]}
+          >
+            <Text style={styles.doneBtnText}>Done</Text>
+          </Pressable>
+        }
+      />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={profileRefreshing}
+            onRefresh={() => void refreshProfile()}
+            tintColor={colors.primary}
+          />
+        }
+      >
       {/* Profile block (Stitch: centered avatar, name, role line — no staff / no Edit profile). */}
       <View style={styles.profileBlock}>
         <View
@@ -230,7 +253,8 @@ export function SettingsScreen() {
       )}
 
       <View style={{ height: insets.bottom + space.xl }} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -245,6 +269,16 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.85,
+  },
+  doneBtn: {
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+  },
+  doneBtnText: {
+    fontSize: typeScale.bodyMd,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: -0.1,
   },
   disabled: {
     opacity: 0.6,

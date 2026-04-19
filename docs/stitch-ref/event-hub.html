@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>McCheck Event Suite</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter for a clean modern sans-serif look -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'app-bg': '#F8FAFC',
+            'primary-green': '#066141',
+            'light-green': '#E7F2EE',
+            'muted-text': '#71717A',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+<style data-purpose="custom-layout">
+    body {
+      -webkit-tap-highlight-color: transparent;
+      background-color: #F8FAFC;
+    }
+    /* Custom circular progress gauge using conic-gradient */
+    .progress-ring {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #066141 0% 162deg, 
+        #F1F5F9 162deg 360deg
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .progress-ring::before {
+      content: "";
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background-color: white;
+      border-radius: 50%;
+    }
+    /* Fix for bottom nav padding on notched iPhones */
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  </style>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-sans text-slate-900 antialiased">
+<!-- BEGIN: MainHeader -->
+<header class="flex items-center justify-between px-6 py-5 bg-transparent" data-purpose="app-header">
+<div class="flex-1"></div>
+<h1 class="text-lg font-bold text-center flex-1 whitespace-nowrap">McCheck Event Suite</h1>
+<div class="flex-1 flex justify-end">
+<!-- History Icon -->
+<button aria-label="History" class="p-1">
+<svg class="text-slate-600" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+</button>
+</div>
+</header>
+<!-- END: MainHeader -->
+<main class="px-6 py-6 pb-32">
+<!-- BEGIN: EventTitleSection -->
+<section class="mt-4 mb-8" data-purpose="event-identity">
+<h2 class="text-4xl font-extrabold tracking-tight">Annual Gala 2024</h2>
+<p class="text-lg font-medium mt-1 text-slate-700">Metropolitan Arts Center</p>
+</section>
+<!-- END: EventTitleSection -->
+<!-- BEGIN: MainCapacityCard -->
+<section class="bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 flex flex-col items-center mb-8" data-purpose="capacity-status">
+<!-- Capacity Circular Gauge -->
+<div class="progress-ring mb-8">
+<div class="relative z-10 text-center">
+<span class="block text-5xl font-extrabold text-primary-green">45%</span>
+<span class="block text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Capacity</span>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="flex w-full justify-around items-center border-t border-slate-50 pt-8 mt-4">
+<div class="text-center px-4 flex-1">
+<span class="block text-4xl font-extrabold text-slate-900">450</span>
+<span class="block text-xs font-bold text-slate-500 uppercase tracking-widest mt-2">Checked In</span>
+</div>
+<div class="w-px h-10 bg-slate-100"></div>
+<div class="text-center px-4 flex-1">
+<span class="block text-4xl font-extrabold text-slate-900">1000</span>
+<span class="block text-xs font-bold text-slate-500 uppercase tracking-widest mt-2">Expected</span>
+</div>
+</div>
+</section>
+<!-- END: MainCapacityCard -->
+<!-- BEGIN: ActionsArea -->
+<section class="flex flex-col items-center gap-6" data-purpose="user-actions">
+<!-- Open Scanner Button -->
+<button class="w-full bg-primary-green text-white py-6 rounded-2xl font-bold text-lg shadow-[0_8px_24px_rgba(6,97,65,0.3)] active:scale-[0.98] transition-transform">
+        OPEN SCANNER
+      </button>
+<!-- View Guest List Link -->
+<a class="flex items-center gap-2 text-primary-green font-bold text-lg hover:opacity-80" href="#">
+        View Guest List
+        <svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewbox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg"><path d="m9 18 6-6-6-6"></path></svg>
+</a>
+</section>
+<!-- END: ActionsArea -->
+<!-- BEGIN: SecondaryStatsCards -->
+<section class="grid grid-cols-2 gap-4 mt-12" data-purpose="secondary-stats">
+<!-- Dietary Requests Card -->
+<div class="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between aspect-square">
+<div class="text-primary-green mb-4">
+<!-- Food/Drink Icon -->
+<span class="material-symbols-outlined" style="font-size: 32px;">fastfood</span>
+</div>
+<div>
+<span class="block text-4xl font-extrabold text-slate-900">122</span>
+<span class="block text-[11px] font-bold text-slate-500 uppercase leading-tight mt-1">Dietary<br/>Requests</span>
+</div>
+</div>
+<!-- Ticket Redemption Card -->
+<div class="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-between aspect-square">
+<div class="text-primary-green mb-4">
+<!-- Ticket Icon -->
+<span class="material-symbols-outlined" style="font-size: 32px;">confirmation_number</span>
+</div>
+<div>
+<span class="block text-4xl font-extrabold text-slate-900">88%</span>
+<span class="block text-[11px] font-bold text-slate-500 uppercase leading-tight mt-1">Ticket<br/>Redemption</span>
+</div>
+</div>
+</section>
+<!-- END: SecondaryStatsCards -->
+</main>
+<!-- BEGIN: BottomNavigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 pt-3 pb-safe z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]" data-purpose="bottom-nav">
+<div class="flex justify-between items-center max-w-md mx-auto">
+<!-- Nav Item: Events (Active) -->
+<a class="flex flex-col items-center gap-1 group px-5 py-2 rounded-2xl bg-light-green transition-colors" href="#">
+<div class="text-primary-green">
+<svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><rect height="18" rx="2" ry="2" width="18" x="3" y="4"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+</div>
+<span class="text-[10px] font-bold text-primary-green uppercase tracking-wider">Events</span>
+</a>
+<!-- Nav Item: Attendees -->
+<a class="flex flex-col items-center gap-1 group px-4 py-2 text-slate-400" href="#">
+<div>
+<svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider">Attendees</span>
+</a>
+<!-- Nav Item: Settings -->
+<a class="flex flex-col items-center gap-1 group px-4 py-2 text-slate-400" href="#">
+<div>
+<svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.72V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.17a2 2 0 0 1 1-1.74l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider">Settings</span>
+</a>
+</div>
+</nav>
+<!-- END: BottomNavigation -->
+</body></html>

@@ -25,6 +25,27 @@ jest.mock('expo-camera', () => {
   };
 });
 
+// `@expo/vector-icons` pulls in `expo-font` which in turn pulls `expo-asset`.
+// Neither is available to Jest; a plain View stub is enough for render tests.
+jest.mock('@expo/vector-icons', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const makeIcon = (displayName) => {
+    const Icon = (props) => React.createElement(View, { ...props, accessibilityLabel: props.accessibilityLabel ?? displayName });
+    Icon.displayName = displayName;
+    return Icon;
+  };
+  return {
+    Ionicons: makeIcon('Ionicons'),
+    MaterialIcons: makeIcon('MaterialIcons'),
+    MaterialCommunityIcons: makeIcon('MaterialCommunityIcons'),
+    FontAwesome: makeIcon('FontAwesome'),
+    FontAwesome5: makeIcon('FontAwesome5'),
+    Feather: makeIcon('Feather'),
+    AntDesign: makeIcon('AntDesign'),
+  };
+});
+
 jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
   captureException: jest.fn(),

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>McCheck Event Suite - Upcoming Events</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Custom Tailwind Config -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              light: '#f0fdf4', // Light green for active states/pills
+              accent: '#16a34a', // Darker green for text/icons
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts for Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #f9fafb;
+    }
+  </style>
+<style data-purpose="layout">
+    .safe-bottom-padding {
+      padding-bottom: 5rem;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#f8f9fc] text-slate-900">
+<!-- BEGIN: MainHeader -->
+<header class="flex items-center justify-between px-6 py-4 sticky top-0 bg-white z-50">
+<div class="w-6"></div> <!-- Spacer for centering title -->
+<h1 class="text-lg font-bold">McCheck Event Suite</h1>
+<button aria-label="History" class="text-slate-500" type="button">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</header>
+<!-- END: MainHeader -->
+<main class="px-6 safe-bottom-padding">
+<!-- BEGIN: HeroSection -->
+<section class="mt-4 mb-6">
+<h2 class="text-4xl font-black tracking-tight">Upcoming Events</h2>
+<p class="text-slate-500 mt-2 font-medium">You have 4 events scheduled for this week.</p>
+</section>
+<!-- END: HeroSection -->
+<!-- BEGIN: SearchFilterSection -->
+<section class="flex gap-3 mb-8">
+<div class="relative flex-grow">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<input class="block w-full pl-11 pr-4 py-3 bg-slate-100 border-none rounded-2xl focus:ring-2 focus:ring-slate-200 text-slate-600 placeholder:text-slate-400" placeholder="Search events..." type="text"/>
+</div>
+<button class="bg-slate-100 p-3.5 rounded-xl text-slate-700 flex items-center justify-center">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</section>
+<!-- END: SearchFilterSection -->
+<!-- BEGIN: FeaturedEventCard -->
+<section class="mb-8">
+<div class="bg-white rounded-3xl overflow-hidden shadow-md border border-slate-50">
+<!-- Featured Image -->
+<div class="h-48 w-full relative overflow-hidden bg-slate-900">
+<img alt="Global Leadership Summit Stage" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBybiW_b9M8jZflVa2QAzNnIC3KpEGGLo6G0XM1aHZKph29c7NnNUmYMjdMDqqf5Bfwzy0i215iI_OOu7t6Bq6R-Li5HoI3_2K0whFs55Dg11R9ZhJvTirx9yifZzDmZHzkAQM2wIjofCYyJ-yGZCrfs-DokwBBhQTaufh9MPTxdOLkm85OZ2F5DMfw1Laz_vlmNiuXJkerOgB85CmFjC9IbPlf7keikAKwh2s5NpknVz0L9opGqd0RDyrKt0wJhJQXwYnQnK6FhIo"/>
+</div>
+<!-- Card Body -->
+<div class="p-5">
+<div class="flex justify-between items-start mb-3">
+<span class="bg-brand-light text-brand-accent text-xs font-bold px-3 py-1.5 rounded-lg tracking-wider">TODAY</span>
+<div class="text-right">
+<div class="text-2xl font-bold leading-none">24</div>
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Oct</div>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-900 mb-4">Global Leadership Summit</h3>
+<div class="flex items-center gap-6 text-sm text-slate-500 font-medium">
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Main Auditorium, Hall A</span>
+</div>
+<div class="flex items-center gap-2">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>09:00 AM</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: FeaturedEventCard -->
+<!-- BEGIN: EventListSection -->
+<section class="space-y-4">
+<!-- Event Item 1 -->
+<div class="flex items-center gap-4 bg-white p-3 rounded-[2rem] border border-slate-50 shadow-sm">
+<div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-200 flex-shrink-0">
+<img alt="Networking Mixer" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgHcAf-YobV4frHRBrB8dvsig256UljtRAORitYHBVkCymEcC8iXwm8GNg0OJxU4PKaI0H2DMbB2jrcT31a8RNnHo-TNT7mnQtxgqXiqShRvTTmy9obfFJ3KRwT0QlYyC_oIbzaTh51abWQQzeK8iM8B86rIvM-OqJfkgDrdetpewwY9OeytVcM0r3Py9DVjIoQ-MoqXtD8_iHSJkHYwCBDbDzFLhVFVpMPHZcNIakcp_5waKOgmW4rBPjia4sNCxTnTHOkeYvPp4"/>
+</div>
+<div class="flex-grow min-w-0">
+<h4 class="font-bold text-slate-900 truncate">Networking Mixer</h4>
+<div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs font-semibold text-slate-500">
+<span class="flex items-center gap-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Oct 25
+            </span>
+<span class="flex items-center gap-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Sky Lounge
+            </span>
+</div>
+</div>
+<div class="pr-3 text-slate-300">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="m8.25 4.5 7.5 7.5-7.5 7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Event Item 2 -->
+<div class="flex items-center gap-4 bg-white p-3 rounded-[2rem] border border-slate-50 shadow-sm">
+<div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-200 flex-shrink-0">
+<img alt="Product Design Workshop" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC60YSIMFU3vF5alcy9hHsnpMedYEUFySZr5JItZUeB3BQSG-51JM9glcsQQhQ4I9qGV17B3fBbR9EYNtk6ZQL-9Uu7yCK6-33GTGxxy9Gb9o_ZVS6rNuJI-5xE65eSL1lN6ZkYQC-OLtH7E9Vz55qVqnj4qDmHn_Z8QknmBz18aqX2lANfN4YFjzOq1iqCzOk57eHd7cjlgOdyPOl17RkUr9f9-wOxq5N7pmBcr37_Yvnhsw7g-maqCjKrcnsODR14l3yKJ2l8JAY"/>
+</div>
+<div class="flex-grow min-w-0">
+<h4 class="font-bold text-slate-900 truncate">Product Design Workshop</h4>
+<div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs font-semibold text-slate-500">
+<span class="flex items-center gap-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Oct 27
+            </span>
+<span class="flex items-center gap-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Design Lab 4
+            </span>
+</div>
+</div>
+<div class="pr-3 text-slate-300">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="m8.25 4.5 7.5 7.5-7.5 7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Event Item 3 -->
+<div class="flex items-center gap-4 bg-white p-3 rounded-[2rem] border border-slate-50 shadow-sm">
+<div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-200 flex-shrink-0">
+<img alt="AI in Enterprise Webinar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCi0YGNKhZ42xHaRANle7fGk7XN0_rhtWo95pqoQ7uRJRjtwOyQ-0cLSDEY6baajU6VQ5s3MTcCKGH4vINiMmKsPykUkpqZ0yjMan1pNnuxjtvsAJ-iPUS5MfUYMRKTmH24FyKreKXg2JGkM8gJcixeb6rKl9NWpi1fxjLsjq_c4E2bruFalVSYYxx0oi0rA-c1MzstYzN5ZbtMq0pJ4-LkM_jnaPL4W5InY859asV7OJIzZSurWOvUMrYccKbJzY4lrSWd5C26C4M"/>
+</div>
+<div class="flex-grow min-w-0">
+<h4 class="font-bold text-slate-900 truncate">AI in Enterprise Webinar</h4>
+<div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs font-semibold text-slate-500">
+<span class="flex items-center gap-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Nov 02
+            </span>
+<span class="flex items-center gap-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="m15.75 10.5 4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              Remote
+            </span>
+</div>
+</div>
+<div class="pr-3 text-slate-300">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="m8.25 4.5 7.5 7.5-7.5 7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+</section>
+<!-- END: EventListSection -->
+</main>
+<!-- BEGIN: BottomNavigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-2 pb-6 flex justify-between items-center z-50">
+<!-- Events Tab (Active) -->
+<a class="flex flex-col items-center gap-1" href="#">
+<div class="bg-brand-light px-6 py-1.5 rounded-2xl flex items-center justify-center">
+<svg class="w-6 h-6 text-brand-accent" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9 3.75h.008v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-bold text-slate-700 tracking-wider">EVENTS</span>
+</a>
+<!-- Attendees Tab -->
+<a class="flex flex-col items-center gap-1" href="#">
+<div class="px-6 py-1.5 flex items-center justify-center text-slate-400">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-bold text-slate-400 tracking-wider">ATTENDEES</span>
+</a>
+<!-- Settings Tab -->
+<a class="flex flex-col items-center gap-1" href="#">
+<div class="px-6 py-1.5 flex items-center justify-center text-slate-400">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.127c-.332.183-.582.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] font-bold text-slate-400 tracking-wider">SETTINGS</span>
+</a>
+</nav>
+<!-- END: BottomNavigation -->
+</body></html><!-- MISSING_IMAGES:
+- TEMP_FEATURED_IMAGE: A large high-quality photo of a modern auditorium stage with blue neon lights and multiple large screens.
+- TEMP_EVENT_1: A warm-toned square thumbnail showing people blurred in the background at a lounge or bar setting.
+- TEMP_EVENT_2: A top-down square thumbnail of a team collaborating around a white table with design assets.
+- TEMP_EVENT_3: A square thumbnail showing a person silhouetted against a projection screen in a dark room.
+-->

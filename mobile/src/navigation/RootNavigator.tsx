@@ -4,8 +4,10 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { LoginScreen } from '../screens/LoginScreen';
+import { PrivacyPolicyScreen } from '../screens/PrivacyPolicyScreen';
+import { TermsOfServiceScreen } from '../screens/TermsOfServiceScreen';
 import { colors } from '../theme/tokens';
-import { MainTabNavigator } from './MainTabNavigator';
+import { MainStackNavigator } from './MainStackNavigator';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -33,8 +35,10 @@ export function RootNavigator() {
         {!authed ? (
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         ) : (
-          <Stack.Screen name="Main" component={MainTabNavigator} options={{ headerShown: false }} />
+          <Stack.Screen name="Main" component={MainStackNavigator} options={{ headerShown: false }} />
         )}
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+        <Stack.Screen name="Terms" component={TermsOfServiceScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

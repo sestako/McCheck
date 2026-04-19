@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scanner Engine - McCheck Event Suite</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb4a8",
+                        "primary-container": "#007a5e",
+                        "secondary": "#436558",
+                        "on-tertiary-fixed-variant": "#783026",
+                        "on-secondary-fixed-variant": "#2c4d41",
+                        "secondary-container": "#c5ebda",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#ededf2",
+                        "secondary-fixed-dim": "#aacfbe",
+                        "on-primary": "#ffffff",
+                        "background": "#f9f9fe",
+                        "error": "#ba1a1a",
+                        "outline": "#6e7a74",
+                        "on-background": "#1a1c1f",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f9f9fe",
+                        "outline-variant": "#bdc9c2",
+                        "surface-bright": "#f9f9fe",
+                        "tertiary-fixed": "#ffdad4",
+                        "tertiary-container": "#a65347",
+                        "inverse-on-surface": "#f0f0f5",
+                        "secondary-fixed": "#c5ebda",
+                        "inverse-surface": "#2e3034",
+                        "on-surface-variant": "#3e4944",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#006c53",
+                        "tertiary": "#883c31",
+                        "surface-container-high": "#e8e8ed",
+                        "on-primary-fixed-variant": "#00513d",
+                        "primary": "#005f48",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#79d8b7",
+                        "primary-fixed": "#95f5d2",
+                        "on-secondary-container": "#496b5e",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#79d8b7",
+                        "surface-container-highest": "#e2e2e7",
+                        "on-secondary-fixed": "#002117",
+                        "on-primary-container": "#a4ffdd",
+                        "on-surface": "#1a1c1f",
+                        "on-tertiary-container": "#ffe8e5",
+                        "surface-dim": "#d9dade",
+                        "surface-container-low": "#f3f3f8",
+                        "on-primary-fixed": "#002117",
+                        "surface-variant": "#e2e2e7",
+                        "on-tertiary-fixed": "#3e0502"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scanner-frame {
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-black overflow-hidden h-screen w-full flex flex-col">
+<!-- TOP APP BAR (Suppressed as per rules for task-focused sub-page, but maintaining brand identity if required) -->
+<!-- The prompt implies a full-screen viewfinder, so we prioritize the Scanner UI Shell -->
+<!-- Scanner Camera Viewfinder -->
+<div class="relative flex-1 flex flex-col items-center justify-center">
+<!-- Simulated Camera Feed -->
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover grayscale-[0.2] brightness-[0.7]" data-alt="Modern high-tech conference hall interior with soft professional lighting, blurred background showing event attendees and digital displays" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmQqzxOOsNRIwq6aub_SrDly4rl57T6tcwDQLNsTPJ3kvY6p4S1rz1gJ3KByKpGa7mOcdL5k4yNpZvx51JXxYV6qo2XZISVHSH_UQfYyXLmurq-tgskHFMdpTq1wgu5m475DRrk6UoxCF9CfVYdhaS1ogLwwaW-xEkZDxfKqNKBu6z_c8seXUxeBRwsUfTTA2NQ8txm_jmktZjQyP2sj5psPN31omWP2wgKnHJurOZfwrP1yfrYjnmdt7VLAvld7dAivIqoeBgUuU"/>
+</div>
+<!-- Success Banner: Glassmorphic Overlay -->
+<div class="absolute top-8 left-0 w-full px-6 z-50 flex justify-center">
+<div class="w-full max-w-md backdrop-blur-2xl rounded-[1.25rem] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-4 border border-white/10 bg-red-600/80">
+<div class="bg-white/20 rounded-full p-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white/70 text-[11px] font-bold uppercase tracking-widest">Confirmation</span>
+<h2 class="text-white font-semibold text-lg tracking-tight leading-tight">Invalid Ticket: Already Scanned</h2>
+</div>
+</div>
+</div>
+<!-- Viewfinder Scanning Frame -->
+<div class="relative z-10 w-72 h-72">
+<!-- Corners -->
+<div class="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-primary-fixed rounded-tl-3xl"></div>
+<div class="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-primary-fixed rounded-tr-3xl"></div>
+<div class="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-primary-fixed rounded-bl-3xl"></div>
+<div class="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-primary-fixed rounded-br-3xl"></div>
+<!-- Scanning Line -->
+<div class="absolute top-0 left-4 right-4 h-1 bg-gradient-to-r from-transparent via-primary-fixed to-transparent opacity-80 animate-[bounce_2s_infinite]"></div>
+<!-- Dim Backdrop Mask -->
+<div class="scanner-frame absolute inset-0 rounded-3xl pointer-events-none"></div>
+</div>
+<!-- Instructions -->
+<div class="absolute bottom-32 z-10 text-center">
+<p class="text-white/90 font-medium text-base drop-shadow-md">Align QR code within the frame</p>
+<p class="text-white/50 text-sm mt-1">Scanning automatically...</p>
+</div>
+<!-- Controls Area -->
+<div class="absolute bottom-10 left-0 w-full px-10 z-20 flex justify-between items-center max-w-lg mx-auto">
+<button class="bg-white/10 backdrop-blur-xl w-14 h-14 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="flashlight_on">flashlight_on</span>
+</button>
+<button class="bg-white text-primary w-16 h-16 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="photo_camera" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+</button>
+<button class="bg-white/10 backdrop-blur-xl w-14 h-14 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- Manual Entry Drawer (Subtle Peek) -->
+<div class="h-20 bg-surface-container-lowest/10 backdrop-blur-md rounded-t-[2.5rem] flex items-center justify-center border-t border-white/5">
+<div class="w-12 h-1.5 bg-white/20 rounded-full absolute top-3"></div>
+<button class="flex items-center gap-2 text-white/80 font-semibold tracking-wide py-2 px-4 rounded-xl hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="keyboard">keyboard</span>
+<span class="text-sm">Manual Entry</span>
+</button>
+</div>
+</body></html>

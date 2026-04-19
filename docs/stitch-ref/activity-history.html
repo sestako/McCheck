@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>McCheck Event Suite - Activity History</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #F8F9FB; /* Matches the soft grey/off-white background */
+    }
+  </style>
+<style data-purpose="custom-elements">
+    /* Custom scrollbar hiding for the horizontal filter bar */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Subtle card borders and shadows */
+    .activity-card {
+      border: 1px solid rgba(0,0,0,0.03);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-slate-900 pb-10">
+<!-- BEGIN: MainHeader -->
+<header class="flex items-center justify-between px-6 py-5 sticky top-0 bg-[#F8F9FB] z-50" data-purpose="app-header">
+<button aria-label="Go back" class="p-1">
+<svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<h1 class="text-xl font-bold text-slate-800 tracking-tight">McCheck Event Suite</h1>
+<button aria-label="View history" class="p-1">
+<svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</header>
+<!-- END: MainHeader -->
+<main class="px-6">
+<!-- BEGIN: EventFilters -->
+<section class="flex gap-2 overflow-x-auto hide-scrollbar py-2 mb-6" data-purpose="event-type-filters">
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-[#116450] text-white text-sm font-medium flex items-center gap-1.5">
+        All Events
+        <svg class="w-4 h-4 opacity-80" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z" fill-rule="evenodd"></path>
+</svg>
+</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-[#EAEBEF] text-slate-800 text-sm font-medium">
+        Annual Gala 2024
+      </button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-[#EAEBEF] text-slate-800 text-sm font-medium">
+        Tech Summit
+      </button>
+</section>
+<!-- END: EventFilters -->
+<!-- BEGIN: PageTitle -->
+<section class="mb-8" data-purpose="page-intro">
+<h2 class="text-4xl font-bold text-black mb-3 tracking-tight">Activity History</h2>
+<p class="text-lg text-slate-700 leading-snug font-normal max-w-[320px]">
+        Real-time log of check-ins and session movements.
+      </p>
+</section>
+<!-- END: PageTitle -->
+<!-- BEGIN: SearchAndFilter -->
+<section class="flex gap-2.5 mb-8" data-purpose="search-controls">
+<div class="relative flex-grow">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<svg class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="block w-full pl-11 pr-4 py-3.5 bg-[#F4F5F8] border-none rounded-2xl text-slate-800 placeholder-slate-500 focus:ring-0 text-[15px]" placeholder="Search guests or staf" type="text"/>
+</div>
+<button class="flex items-center gap-2 px-5 py-3.5 bg-[#F4F5F8] rounded-2xl text-slate-800 font-medium text-[15px]">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0m-9.75 0h9.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+        Filters
+      </button>
+</section>
+<!-- END: SearchAndFilter -->
+<!-- BEGIN: ActivityListToday -->
+<section class="mb-12" data-purpose="date-group-today">
+<h3 class="text-[11px] font-bold text-slate-400 tracking-[0.15em] mb-4 uppercase">Today — Oct 24</h3>
+<div class="space-y-4">
+<!-- Card 1: Success Check-in -->
+<article class="activity-card bg-white rounded-2xl p-5 flex items-start gap-4">
+<div class="flex-shrink-0 w-11 h-11 rounded-full bg-emerald-100/50 flex items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center">
+<svg class="w-5 h-5 text-white" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M16.704 4.176a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<p class="text-[15px] leading-snug">
+<span class="font-bold">John Smith</span> checked in by <span class="font-bold">Sarah</span>
+</p>
+<span class="text-xs text-slate-500 font-medium ml-2">14:02</span>
+</div>
+<p class="text-sm text-slate-600 font-medium">Annual Gala • Main Atrium • VIP Tier</p>
+</div>
+</article>
+<!-- Card 2: Denied Check-in -->
+<article class="activity-card bg-white rounded-2xl p-5 flex items-start gap-4 border-l-4 border-l-red-100">
+<div class="flex-shrink-0 w-11 h-11 rounded-full bg-red-100/50 flex items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-rose-700 flex items-center justify-center">
+<svg class="w-5 h-5 text-white" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22z"></path>
+</svg>
+</div>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<p class="text-[15px] leading-snug">
+<span class="font-bold">Elena Rodriguez</span> denied by <span class="font-bold">Mike</span>
+</p>
+<span class="text-xs text-slate-500 font-medium ml-2">13:58</span>
+</div>
+<p class="text-sm text-rose-900/70 font-medium">Tech Summit • Invalid Badge • Expired</p>
+</div>
+</article>
+<!-- Card 3: Success Check-in -->
+<article class="activity-card bg-white rounded-2xl p-5 flex items-start gap-4">
+<div class="flex-shrink-0 w-11 h-11 rounded-full bg-emerald-100/50 flex items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center">
+<svg class="w-5 h-5 text-white" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M16.704 4.176a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<p class="text-[15px] leading-snug">
+<span class="font-bold">Marcus Chen</span> checked in by <span class="font-bold">Sarah</span>
+</p>
+<span class="text-xs text-slate-500 font-medium ml-2">13:45</span>
+</div>
+<p class="text-sm text-slate-600 font-medium">Annual Gala • Workshop B • General</p>
+</div>
+</article>
+<!-- Card 4: Movement/Transfer -->
+<article class="activity-card bg-white rounded-2xl p-5 flex items-start gap-4">
+<div class="flex-shrink-0 w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
+<div class="w-8 h-8 flex items-center justify-center text-[#004D40]">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<p class="text-[15px] leading-snug">
+<span class="font-bold">Amanda Lee</span> moved to Lounge by <span class="font-bold">David</span>
+</p>
+<span class="text-xs text-slate-500 font-medium ml-2">13:20</span>
+</div>
+<p class="text-sm text-slate-600 font-medium">Annual Gala • Transfer from Ballroom</p>
+</div>
+</article>
+</div>
+</section>
+<!-- END: ActivityListToday -->
+<!-- BEGIN: ActivityListYesterday -->
+<section data-purpose="date-group-yesterday">
+<h3 class="text-[11px] font-bold text-slate-400 tracking-[0.15em] mb-4 uppercase">Yesterday — Oct 23</h3>
+<div class="space-y-4">
+<!-- Card 5: Success Check-in -->
+<article class="activity-card bg-white rounded-2xl p-5 flex items-start gap-4">
+<div class="flex-shrink-0 w-11 h-11 rounded-full bg-emerald-100/50 flex items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center">
+<svg class="w-5 h-5 text-white" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M16.704 4.176a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<p class="text-[15px] leading-snug">
+<span class="font-bold">Robert Frost</span> checked in by <span class="font-bold">Mike</span>
+</p>
+<span class="text-xs text-slate-500 font-medium ml-2">18:12</span>
+</div>
+<p class="text-sm text-slate-600 font-medium">Evening Gala Entry</p>
+</div>
+</article>
+</div>
+</section>
+<!-- END: ActivityListYesterday -->
+</main>
+</body></html>

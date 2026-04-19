@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Co-worker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#e2e2e7",
+                      "on-tertiary-container": "#ffe8e5",
+                      "tertiary-container": "#a65347",
+                      "inverse-on-surface": "#f0f0f5",
+                      "on-primary-container": "#a4ffdd",
+                      "secondary-fixed-dim": "#aacfbe",
+                      "on-primary-fixed": "#002117",
+                      "on-background": "#1a1c1f",
+                      "surface-container-high": "#e8e8ed",
+                      "surface-tint": "#006c53",
+                      "tertiary-fixed-dim": "#ffb4a8",
+                      "tertiary": "#883c31",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed-variant": "#2c4d41",
+                      "on-secondary-fixed": "#002117",
+                      "surface-container-low": "#f3f3f8",
+                      "surface-dim": "#d9dade",
+                      "surface-container": "#ededf2",
+                      "surface-container-highest": "#e2e2e7",
+                      "error": "#ba1a1a",
+                      "background": "#f9f9fe",
+                      "outline-variant": "#bdc9c2",
+                      "on-surface-variant": "#3e4944",
+                      "error-container": "#ffdad6",
+                      "surface": "#f9f9fe",
+                      "on-tertiary": "#ffffff",
+                      "outline": "#6e7a74",
+                      "secondary-container": "#c5ebda",
+                      "on-secondary-container": "#496b5e",
+                      "inverse-primary": "#79d8b7",
+                      "on-tertiary-fixed-variant": "#783026",
+                      "on-tertiary-fixed": "#3e0502",
+                      "inverse-surface": "#2e3034",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#f9f9fe",
+                      "tertiary-fixed": "#ffdad4",
+                      "on-surface": "#1a1c1f",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#007a5e",
+                      "on-error": "#ffffff",
+                      "primary": "#005f48",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#95f5d2",
+                      "secondary": "#436558",
+                      "primary-fixed-dim": "#79d8b7",
+                      "on-primary-fixed-variant": "#00513d",
+                      "secondary-fixed": "#c5ebda"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl no-border shadow-sm shadow-black/5">
+<div class="flex items-center justify-between px-6 h-16 w-full max-w-screen-xl mx-auto">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-full transition-colors text-slate-500">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="text-lg font-semibold text-[#007A5E] font-sans tracking-tight">Add Co-worker</h1>
+</div>
+<div class="flex items-center">
+<button class="active:scale-95 duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-full transition-colors text-slate-500">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-xl mx-auto min-h-screen">
+<!-- Hero Illustration / Context Section -->
+<section class="mb-10 text-center">
+<div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary-fixed mb-6">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="person_add">person_add</span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight text-on-surface mb-2">Expand Your Team</h2>
+<p class="text-on-surface-variant text-sm">Invite a new member to collaborate on your upcoming schedules and events.</p>
+</section>
+<!-- Form Section -->
+<form class="space-y-8">
+<div class="space-y-6">
+<!-- Name Input -->
+<div class="space-y-2">
+<label class="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant ml-1">Full Name</label>
+<div class="relative group">
+<input class="w-full h-14 px-4 rounded-xl bg-surface-container-low border-none focus:ring-2 focus:ring-primary-fixed focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/50" placeholder="e.g. Julianne Moore" type="text"/>
+</div>
+</div>
+<!-- Email Input -->
+<div class="space-y-2">
+<label class="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant ml-1">Email Address</label>
+<div class="relative group">
+<input class="w-full h-14 px-4 rounded-xl bg-surface-container-low border-none focus:ring-2 focus:ring-primary-fixed focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/50" placeholder="julianne@company.com" type="email"/>
+</div>
+</div>
+<!-- Role Selection -->
+<div class="space-y-3">
+<label class="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant ml-1">Role Assignment</label>
+<div class="grid grid-cols-1 gap-3">
+<!-- Role Card: Manager -->
+<label class="relative flex items-center p-4 rounded-xl bg-surface-container-lowest border-2 border-transparent cursor-pointer hover:bg-surface-container transition-all active:scale-[0.98]">
+<input class="hidden peer" name="role" type="radio" value="manager"/>
+<div class="peer-checked:bg-primary-container/10 peer-checked:border-primary absolute inset-0 rounded-xl transition-all"></div>
+<div class="relative flex items-center w-full">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary" data-icon="admin_panel_settings">admin_panel_settings</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-on-surface">Manager</p>
+<p class="text-[12px] text-on-surface-variant">Full access to team and schedules</p>
+</div>
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary transition-all flex items-center justify-center">
+<div class="w-2 h-2 bg-white rounded-full"></div>
+</div>
+</div>
+</label>
+<!-- Role Card: Coordinator -->
+<label class="relative flex items-center p-4 rounded-xl bg-surface-container-lowest border-2 border-transparent cursor-pointer hover:bg-surface-container transition-all active:scale-[0.98]">
+<input checked="" class="hidden peer" name="role" type="radio" value="coordinator"/>
+<div class="peer-checked:ring-2 peer-checked:ring-primary/20 peer-checked:border-primary absolute inset-0 rounded-xl transition-all"></div>
+<div class="relative flex items-center w-full">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary" data-icon="event_note">event_note</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-on-surface">Coordinator</p>
+<p class="text-[12px] text-on-surface-variant">Manage events and schedule staff</p>
+</div>
+<div class="w-5 h-5 rounded-full border-2 border-primary bg-primary transition-all flex items-center justify-center">
+<div class="w-2 h-2 bg-white rounded-full"></div>
+</div>
+</div>
+</label>
+<!-- Role Card: Staff -->
+<label class="relative flex items-center p-4 rounded-xl bg-surface-container-lowest border-2 border-transparent cursor-pointer hover:bg-surface-container transition-all active:scale-[0.98]">
+<input class="hidden peer" name="role" type="radio" value="staff"/>
+<div class="peer-checked:ring-2 peer-checked:ring-primary/20 peer-checked:border-primary absolute inset-0 rounded-xl transition-all"></div>
+<div class="relative flex items-center w-full">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary" data-icon="badge">badge</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold text-on-surface">Staff</p>
+<p class="text-[12px] text-on-surface-variant">View schedules and mark attendance</p>
+</div>
+<div class="w-5 h-5 rounded-full border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary transition-all flex items-center justify-center">
+<div class="w-2 h-2 bg-white rounded-full"></div>
+</div>
+</div>
+</label>
+</div>
+</div>
+</div>
+<!-- Profile Preview Card (Asymmetric Bento Element) -->
+<div class="p-6 rounded-2xl bg-surface-container-low flex items-center gap-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-5">
+<span class="material-symbols-outlined text-9xl" data-icon="group">group</span>
+</div>
+<div class="w-16 h-16 rounded-full bg-outline-variant/20 flex items-center justify-center overflow-hidden shrink-0">
+<img alt="Team Avatar Preview" class="w-full h-full object-cover" data-alt="Close up portrait of a professional worker in a clean office environment with natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC069qVKxxtTaPTOlWYVVolq8pW89O_spABvY4GUYDtZVHiVW2en7_AEu5dAZZaD_-gFaXB_N_7yxeUh5PKQ4N8MFqGa8Rce7S5M0LYKCzZ8lvxA6rk2git8TB7OXQXAu756ozw9BbNkMIJSV0frgyNUYGeKNBSG7iIzsSTblZepJTHl96MJfzfr8kYdhPozmHkVSmbXQNtjPnmdUZFS_J7phAEzjrai0U8RxDrPZgzwZ1zUOvHFpiunYZ_RwBHX-Y-Ikh7YCWP1Uc"/>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Preview Profile</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Assigned co-workers will receive an invitation email to join the digital atrium platform.</p>
+</div>
+</div>
+</form>
+</main>
+<!-- Fixed Primary Action Button -->
+<div class="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-surface via-surface to-transparent">
+<div class="max-w-xl mx-auto">
+<button class="w-full h-14 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white font-bold tracking-tight shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+                Add Co-worker
+            </button>
+</div>
+</div>
+<!-- Notification Overlay (Glassmorphism) -->
+<div class="fixed top-20 left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-sm z-50">
+<div class="bg-surface-container-lowest/70 backdrop-blur-2xl p-4 rounded-2xl shadow-[0_40px_40px_rgba(0,0,0,0.05)] border border-white/20 flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="info">info</span>
+</div>
+<p class="text-[12px] font-medium text-on-surface">Team slots remaining: <span class="font-bold">4</span></p>
+</div>
+</div>
+</body></html>

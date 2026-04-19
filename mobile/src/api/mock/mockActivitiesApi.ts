@@ -1,7 +1,7 @@
 import { getMockScenario } from '../../config/mockScenario';
 import { isActiveEvent } from '../../lib/isActiveEvent';
 import type { CheckInResult, TicketResolveResult } from '../checkInTypes';
-import type { ActivitiesApi, Activity, PaginatedAttendees } from '../types';
+import type { ActivitiesApi, Activity, ActivityFilter, PaginatedAttendees } from '../types';
 import { ApiError } from '../types';
 import {
   isMockTicketCheckedIn,
@@ -18,13 +18,13 @@ import {
 
 export function createMockActivitiesApi(): ActivitiesApi {
   return {
-    async getMyActivities(): Promise<Activity[]> {
+    async getMyActivities(filter: ActivityFilter = 'all'): Promise<Activity[]> {
       await delay(400);
       if (getMockScenario() === 'activities_fail') {
         throw new ApiError('Could not load events', 503);
       }
       const source = mockActivitySource();
-      return source.filter((a) => isActiveEvent(a));
+      return applyMockFilter(source, filter);
     },
 
     async getActivity(id: number): Promise<Activity> {
@@ -106,6 +106,36 @@ function mockActivitySource(): Activity[] {
     return [...mockActivitiesCore, ...mockActivitiesEdge];
   }
   return mockActivitiesCore;
+}
+
+/**
+ * Mirrors MoveConcept `GET /users/me/activities?filter=…` semantics locally:
+ * - `'upcoming'` → start is in the future.
+ * - `'ongoing'`  → `now` is between start and end (inclusive).
+ * - `'all'` (or undefined) → every active event the organizer owns (upcoming OR ongoing).
+ *
+ * McCheck **does not surface drafts** in the mobile app; `state === 'draft'` rows
+ * are dropped regardless of filter, matching the real client.
+ */
+function applyMockFilter(source: Activity[], filter: ActivityFilter): Activity[] {
+  const now = new Date();
+  const nonDraft = source.filter((a) => a.state?.toLowerCase() !== 'draft');
+  if (filter === 'upcoming') {
+    return nonDraft.filter((a) => {
+      const start = new Date(a.start);
+      return !Number.isNaN(start.getTime()) && start.getTime() > now.getTime();
+    });
+  }
+  if (filter === 'ongoing') {
+    return nonDraft.filter((a) => {
+      const start = new Date(a.start);
+      const end = new Date(a.end);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return false;
+      const t = now.getTime();
+      return start.getTime() <= t && end.getTime() >= t;
+    });
+  }
+  return nonDraft.filter((a) => isActiveEvent(a, now));
 }
 
 function delay(ms: number): Promise<void> {

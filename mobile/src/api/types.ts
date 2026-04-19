@@ -53,8 +53,20 @@ export interface PaginatedAttendees {
   hasMore: boolean;
 }
 
+/**
+ * Filter for `GET /api/users/me/activities`. McCheck scopes to *active* events
+ * (upcoming or ongoing) only — **drafts are intentionally hidden**. Backend also
+ * supports `filter=draft` (see `docs/api-docs.json`) but the mobile organizer
+ * app treats drafts as web-only until product asks otherwise.
+ *
+ * - `'all'`       → upcoming **and** ongoing (default)
+ * - `'upcoming'`  → start is in the future
+ * - `'ongoing'`   → event is live right now
+ */
+export type ActivityFilter = 'all' | 'upcoming' | 'ongoing';
+
 export interface ActivitiesApi {
-  getMyActivities(): Promise<Activity[]>;
+  getMyActivities(filter?: ActivityFilter): Promise<Activity[]>;
   getActivity(id: number): Promise<Activity>;
   getAttendees(
     activityId: number,
