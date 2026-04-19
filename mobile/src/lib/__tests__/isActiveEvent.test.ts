@@ -8,6 +8,7 @@ function makeActivity(overrides: Partial<Activity> = {}): Activity {
     state: 'public',
     name: 'Test',
     teaser: null,
+    pictureUrl: null,
     capacity: 100,
     start: '2026-04-10T10:00:00.000Z',
     end: '2026-04-10T12:00:00.000Z',

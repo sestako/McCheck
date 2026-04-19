@@ -26,6 +26,7 @@ describe('mapActivity', () => {
     expect(a.isSpecial).toBe(false);
     expect(a.createdAt).toBeNull();
     expect(a.updatedAt).toBeNull();
+    expect(a.pictureUrl).toBeNull();
   });
 
   it('maps snake_case counts and owner_id', () => {
@@ -76,6 +77,82 @@ describe('mapActivity', () => {
     });
     expect(a.id).toBe(12);
     expect(a.name).toBe('API style');
+  });
+
+  it('maps pictureUrl from coverUrl, camelCase, snake_case, or string picture', () => {
+    expect(
+      mapActivity({
+        id: 1,
+        uuid: 'u',
+        state: 'public',
+        name: 'A',
+        coverUrl: ' https://cover.test/hero.jpg ',
+        start: '2026-01-01T00:00:00.000Z',
+        end: '2026-01-01T01:00:00.000Z',
+        owner: { id: 1 },
+      }).pictureUrl
+    ).toBe('https://cover.test/hero.jpg');
+    expect(
+      mapActivity({
+        id: 1,
+        uuid: 'u',
+        state: 'public',
+        name: 'A',
+        cover_url: 'https://snake.test/c.png',
+        start: '2026-01-01T00:00:00.000Z',
+        end: '2026-01-01T01:00:00.000Z',
+        owner: { id: 1 },
+      }).pictureUrl
+    ).toBe('https://snake.test/c.png');
+    expect(
+      mapActivity({
+        id: 1,
+        uuid: 'u',
+        state: 'public',
+        name: 'A',
+        pictureUrl: ' https://a.test/x.png ',
+        start: '2026-01-01T00:00:00.000Z',
+        end: '2026-01-01T01:00:00.000Z',
+        owner: { id: 1 },
+      }).pictureUrl
+    ).toBe('https://a.test/x.png');
+    expect(
+      mapActivity({
+        id: 2,
+        uuid: 'u',
+        state: 'public',
+        name: 'B',
+        picture_url: 'https://b.test/y.jpg',
+        start: '2026-01-01T00:00:00.000Z',
+        end: '2026-01-01T01:00:00.000Z',
+        owner: { id: 1 },
+      }).pictureUrl
+    ).toBe('https://b.test/y.jpg');
+    expect(
+      mapActivity({
+        id: 3,
+        uuid: 'u',
+        state: 'public',
+        name: 'C',
+        picture: 'https://c.test/z.webp',
+        start: '2026-01-01T00:00:00.000Z',
+        end: '2026-01-01T01:00:00.000Z',
+        owner: { id: 1 },
+      }).pictureUrl
+    ).toBe('https://c.test/z.webp');
+    expect(
+      mapActivity({
+        id: 4,
+        uuid: 'u',
+        state: 'public',
+        name: 'D',
+        coverUrl: '',
+        pictureUrl: 'https://fallback.test/p.png',
+        start: '2026-01-01T00:00:00.000Z',
+        end: '2026-01-01T01:00:00.000Z',
+        owner: { id: 1 },
+      }).pictureUrl
+    ).toBe('https://fallback.test/p.png');
   });
 
   it('maps venue, category, slug, special flag, and timestamps from snake_case', () => {

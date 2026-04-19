@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Animated,
   Dimensions,
+  Image,
   Modal,
   Pressable,
   RefreshControl,
@@ -369,6 +370,13 @@ function FeaturedEventCard({
   onPress: () => void;
   onOpenGuestList: () => void;
 }) {
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
+  useEffect(() => {
+    setHeroImageFailed(false);
+  }, [activity.pictureUrl]);
+  const heroUri = activity.pictureUrl;
+  const showHeroPhoto = Boolean(heroUri) && !heroImageFailed;
+
   const d = new Date(activity.start);
   const day = Number.isNaN(d.getTime()) ? '--' : String(d.getDate());
   const mon = Number.isNaN(d.getTime())
@@ -389,7 +397,16 @@ function FeaturedEventCard({
         style={({ pressed }) => [pressed && { opacity: 0.97 }]}
       >
         <View style={styles.featuredImage}>
-          <View style={styles.featuredImageGlow} />
+          {showHeroPhoto && heroUri ? (
+            <Image
+              source={{ uri: heroUri }}
+              style={StyleSheet.absoluteFillObject}
+              resizeMode="cover"
+              onError={() => setHeroImageFailed(true)}
+              accessibilityIgnoresInvertColors
+            />
+          ) : null}
+          {!showHeroPhoto ? <View style={styles.featuredImageGlow} /> : null}
         </View>
         <View style={styles.featuredBody}>
           <View style={styles.featuredTopRow}>
@@ -444,6 +461,12 @@ function EventRow({
   onPress: () => void;
   onOpenGuestList: () => void;
 }) {
+  const [thumbFailed, setThumbFailed] = useState(false);
+  useEffect(() => {
+    setThumbFailed(false);
+  }, [activity.pictureUrl, activity.id]);
+  const thumbUri = activity.pictureUrl;
+  const showThumbPhoto = Boolean(thumbUri) && !thumbFailed;
   const initials = activity.name.slice(0, 2).toUpperCase();
   const d = new Date(activity.start);
   const when = Number.isNaN(d.getTime())
@@ -459,7 +482,16 @@ function EventRow({
         style={({ pressed }) => [styles.rowMain, pressed && { opacity: 0.95 }]}
       >
         <View style={styles.rowThumb}>
-          <Text style={styles.rowThumbText}>{initials}</Text>
+          {showThumbPhoto && thumbUri ? (
+            <Image
+              source={{ uri: thumbUri }}
+              style={StyleSheet.absoluteFillObject}
+              resizeMode="cover"
+              onError={() => setThumbFailed(true)}
+              accessibilityIgnoresInvertColors
+            />
+          ) : null}
+          {!showThumbPhoto ? <Text style={styles.rowThumbText}>{initials}</Text> : null}
         </View>
         <View style={styles.rowTextWrap}>
           <Text style={styles.rowTitle} numberOfLines={1}>
@@ -641,6 +673,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.slate900,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   featuredImageGlow: {
     width: 160,
@@ -748,6 +781,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   rowThumbText: {
     color: colors.primary,

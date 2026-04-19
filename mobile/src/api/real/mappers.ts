@@ -24,6 +24,24 @@ function optFiniteNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function pickPictureUrl(o: Record<string, unknown>): string | null {
+  const candidates = [
+    o.coverUrl,
+    o.cover_url,
+    o.pictureUrl,
+    o.picture_url,
+    o.coverImageUrl,
+    o.cover_image_url,
+  ];
+  for (const c of candidates) {
+    const t = optTrimmedString(c);
+    if (t) return t;
+  }
+  const p = o.picture;
+  if (typeof p === 'string') return optTrimmedString(p);
+  return null;
+}
+
 /** Maps a single activity JSON object (camelCase or snake_case) to `Activity`. */
 export function mapActivity(raw: unknown): Activity {
   const o = flattenActivityRaw(raw);
@@ -41,6 +59,7 @@ export function mapActivity(raw: unknown): Activity {
     state: String(o.state ?? o.status ?? ''),
     name: String(o.name ?? ''),
     teaser: o.teaser != null ? String(o.teaser) : null,
+    pictureUrl: pickPictureUrl(o),
     capacity: o.capacity != null ? Number(o.capacity) : null,
     start: String(o.start ?? o.starts_at ?? o.start_at ?? ''),
     end: String(o.end ?? o.ends_at ?? o.end_at ?? ''),

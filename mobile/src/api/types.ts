@@ -13,6 +13,8 @@ export interface Activity {
   state: string;
   name: string;
   teaser: string | null;
+  /** Cover image for listings; mapped from API `coverUrl` (and legacy aliases in `mapActivity`). */
+  pictureUrl: string | null;
   capacity: number | null;
   start: string;
   end: string;

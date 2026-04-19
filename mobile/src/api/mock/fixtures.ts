@@ -9,10 +9,29 @@ function activityDetailFields(
   override: Partial<
     Pick<
       Activity,
-      'address' | 'lat' | 'lon' | 'category' | 'slug' | 'isSpecial' | 'createdAt' | 'updatedAt'
+      | 'address'
+      | 'lat'
+      | 'lon'
+      | 'category'
+      | 'slug'
+      | 'isSpecial'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'pictureUrl'
     >
   > = {}
-): Pick<Activity, 'address' | 'lat' | 'lon' | 'category' | 'slug' | 'isSpecial' | 'createdAt' | 'updatedAt'> {
+): Pick<
+  Activity,
+  | 'address'
+  | 'lat'
+  | 'lon'
+  | 'category'
+  | 'slug'
+  | 'isSpecial'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'pictureUrl'
+> {
   return {
     address: null,
     lat: null,
@@ -22,6 +41,7 @@ function activityDetailFields(
     isSpecial: false,
     createdAt: null,
     updatedAt: null,
+    pictureUrl: null,
     ...override,
   };
 }
@@ -52,6 +72,7 @@ export const mockActivitiesCore: Activity[] = [
       isSpecial: true,
       createdAt: '2025-11-01T09:00:00.000Z',
       updatedAt: '2026-01-15T12:30:00.000Z',
+      pictureUrl: 'https://picsum.photos/seed/mccheck-spring5k/800/400',
     }),
   },
   {

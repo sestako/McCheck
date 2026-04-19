@@ -443,6 +443,13 @@
                         "type": "string",
                         "example": "Join us for a morning run!"
                     },
+                    "coverUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Public URL of the activity cover image (hero / listing). Empty string when no image.",
+                        "example": "https://moveconcept.cz/storage/activities/cover.jpg",
+                        "nullable": true
+                    },
                     "category": {
                         "type": "string",
                         "example": "running",
@@ -561,6 +568,13 @@
                     "teaser": {
                         "type": "string",
                         "example": "Join us for a morning run!"
+                    },
+                    "coverUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Public URL of the activity cover image (hero / listing). Empty string when no image.",
+                        "example": "https://moveconcept.cz/storage/activities/cover.jpg",
+                        "nullable": true
                     },
                     "category": {
                         "type": "string",
